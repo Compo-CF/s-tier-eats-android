@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#6B5CF6</color>
+    <string name="app_name">S-Tier Eats</string>
+    <string name="default_web_client_id" translatable="false">582513589218-1lh7v34t2uook77quiu5feulr35242b9.apps.googleusercontent.com</string>
+    <string name="gcm_defaultSenderId" translatable="false">582513589218</string>
+    <string name="google_api_key" translatable="false">AIzaSyC5SvtDwxTrCUfMH9WfmTNh3idh6lIyqog</string>
+    <string name="google_app_id" translatable="false">1:582513589218:android:2706e1c60b4122a39757bb</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyC5SvtDwxTrCUfMH9WfmTNh3idh6lIyqog</string>
+    <string name="google_storage_bucket" translatable="false">fir-tier-eats.firebasestorage.app</string>
+    <string name="project_id" translatable="false">fir-tier-eats</string>
+    <style name="Theme.STierEats" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>

@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.activity.compose)
 
     implementation(platform(libs.androidx.compose.bom))
@@ -81,4 +82,5 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.kotlinx.coroutines.android)
 }
