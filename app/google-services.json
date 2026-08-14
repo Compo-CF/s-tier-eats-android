@@ -12,7 +12,20 @@
           "package_name": "com.compofelice.stiereats"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "582513589218-3kqth3q48cdokp8ldjm5knlk3u6ivgeb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.compofelice.stiereats",
+            "certificate_hash": "140336c9c54f86f560a9c3d471940626cf66567f"
+          }
+        },
+        {
+          "client_id": "582513589218-1lh7v34t2uook77quiu5feulr35242b9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC5SvtDwxTrCUfMH9WfmTNh3idh6lIyqog"
@@ -20,7 +33,20 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "582513589218-1lh7v34t2uook77quiu5feulr35242b9.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "582513589218-k8fkt1q2n7va64vkopklc2f4o6facah8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.compofelice.WoodlandsEats",
+                "app_store_id": "6773501518"
+              }
+            }
+          ]
         }
       }
     }
