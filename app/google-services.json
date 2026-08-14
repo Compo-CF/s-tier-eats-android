@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "582513589218",
+    "project_id": "fir-tier-eats",
+    "storage_bucket": "fir-tier-eats.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582513589218:android:2706e1c60b4122a39757bb",
+        "android_client_info": {
+          "package_name": "com.compofelice.stiereats"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5SvtDwxTrCUfMH9WfmTNh3idh6lIyqog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

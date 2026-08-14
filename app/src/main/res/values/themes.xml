@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Window-chrome theme for the launch Activity. Compose (STierEatsTheme)
+         drives the actual UI colors; this only styles the window. -->
+    <style name="Theme.STierEats" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>
