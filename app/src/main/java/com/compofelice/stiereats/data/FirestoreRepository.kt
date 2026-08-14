@@ -264,4 +264,29 @@ class FirestoreRepository(
                 .set(data, com.google.firebase.firestore.SetOptions.merge()).await()
         }
     }
+
+    // ── Account deletion (Play requirement for apps with sign-in) ────
+    /**
+     * Permanently deletes all of the current user's data + their Firebase Auth
+     * account. Mirrors what the account-deletion web page promises. Best-effort
+     * per step; the Auth-account delete may need a recent sign-in (Firebase
+     * rule) — if it throws, the data is still gone and the account record ages
+     * out / can be removed on next sign-in.
+     */
+    suspend fun deleteAccount() {
+        val me = uid ?: return
+        suspend fun deleteWhere(collection: String) {
+            runCatching {
+                val snap = db.collection(collection).whereEqualTo("userID", me).get().await()
+                for (doc in snap.documents) doc.reference.delete().await()
+            }
+        }
+        deleteWhere("placements")
+        deleteWhere("dietaryTags")
+        deleteWhere("closureReports")
+        runCatching { db.collection("visitedLists").document(me).delete().await() }
+        runCatching { db.collection("profiles").document(me).delete().await() }
+        runCatching { auth.currentUser?.delete()?.await() }
+        runCatching { auth.signOut() }
+    }
 }

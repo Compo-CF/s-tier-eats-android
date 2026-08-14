@@ -110,6 +110,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.saveProfile(name, status = null) }
     }
 
+    /** Permanently delete the user's account + data (Play requirement). */
+    suspend fun deleteAccount() {
+        repo.deleteAccount()
+        isSignedIn = false
+        displayName = null
+        myPlacements = emptyMap()
+        visited = emptySet()
+    }
+
     // ── Reads passed through to the screens ──────────────────────
     suspend fun communityBoard(source: BoardSource): Map<String, CommunityTier> = when (source) {
         BoardSource.EVERYONE -> repo.allCommunityTiers()
