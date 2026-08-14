@@ -21,17 +21,17 @@ android {
         // local.properties (gitignored — where you put it locally), a Gradle
         // property, or the MAPS_API_KEY env var (CI secret). Empty if unset —
         // map tiles just stay blank, everything else works.
-        val mapsApiKey: String = run {
-            val local = rootProject.file("local.properties")
-            val fromLocal = if (local.exists()) {
-                java.util.Properties().apply { local.inputStream().use { load(it) } }
-                    .getProperty("MAPS_API_KEY")
-            } else null
-            fromLocal
-                ?: (project.findProperty("MAPS_API_KEY") as String?)
-                ?: System.getenv("MAPS_API_KEY")
-                ?: ""
-        }
+        val localFile = rootProject.file("local.properties")
+        val fromLocal: String? = if (localFile.exists()) {
+            localFile.readLines()
+                .firstOrNull { it.trimStart().startsWith("MAPS_API_KEY=") }
+                ?.substringAfter("=")
+                ?.trim()
+        } else null
+        val mapsApiKey: String = fromLocal
+            ?: (project.findProperty("MAPS_API_KEY") as String?)
+            ?: System.getenv("MAPS_API_KEY")
+            ?: ""
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
