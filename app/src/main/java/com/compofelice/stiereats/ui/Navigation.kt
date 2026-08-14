@@ -2,7 +2,7 @@ package com.compofelice.stiereats.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Restaurant
@@ -25,12 +25,14 @@ import androidx.navigation.compose.rememberNavController
 import com.compofelice.stiereats.ui.screens.BrowseScreen
 import com.compofelice.stiereats.ui.screens.CommunityScreen
 import com.compofelice.stiereats.ui.screens.DetailScreen
+import com.compofelice.stiereats.ui.screens.MapScreen
 import com.compofelice.stiereats.ui.screens.MyTiersScreen
 import com.compofelice.stiereats.ui.screens.ProfileScreen
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
 
 private val tabs = listOf(
+    Tab("map", "Map", Icons.Filled.Map),
     Tab("browse", "Browse", Icons.Filled.Restaurant),
     Tab("mytiers", "My Tiers", Icons.Filled.Star),
     Tab("community", "Community", Icons.Filled.Groups),
@@ -73,6 +75,7 @@ fun AppNav(vm: AppViewModel) {
             modifier = Modifier.padding(padding),
         ) {
             val open: (String) -> Unit = { id -> nav.navigate("detail/$id") }
+            composable("map") { MapScreen(vm, open) }
             composable("browse") { BrowseScreen(vm, open) }
             composable("mytiers") { MyTiersScreen(vm, open) }
             composable("community") { CommunityScreen(vm, open) }

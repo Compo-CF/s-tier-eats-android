@@ -17,11 +17,22 @@ android {
         versionName = "1.0"
         vectorDrawables { useSupportLibrary = true }
 
-        // The Maps SDK reads this from the manifest placeholder. The real key is
-        // injected by CI from a secret; locally it falls back to empty (map tiles
-        // just won't load, which is fine for non-map screens).
-        manifestPlaceholders["MAPS_API_KEY"] =
-            (project.findProperty("MAPS_API_KEY") as String?) ?: ""
+        // Maps SDK key for the manifest placeholder. Sourced (in order) from
+        // local.properties (gitignored — where you put it locally), a Gradle
+        // property, or the MAPS_API_KEY env var (CI secret). Empty if unset —
+        // map tiles just stay blank, everything else works.
+        val mapsApiKey: String = run {
+            val local = rootProject.file("local.properties")
+            val fromLocal = if (local.exists()) {
+                java.util.Properties().apply { local.inputStream().use { load(it) } }
+                    .getProperty("MAPS_API_KEY")
+            } else null
+            fromLocal
+                ?: (project.findProperty("MAPS_API_KEY") as String?)
+                ?: System.getenv("MAPS_API_KEY")
+                ?: ""
+        }
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     signingConfigs {
@@ -79,6 +90,7 @@ dependencies {
     implementation(libs.googleid)
 
     implementation(libs.maps.compose)
+    implementation(libs.maps.compose.utils)
     implementation(libs.play.services.maps)
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.play.services)
