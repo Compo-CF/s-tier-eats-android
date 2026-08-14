@@ -10,3 +10,6 @@
 local.properties
 *.keystore
 *.jks
+# ...except the shared throwaway DEBUG keystore (safe to commit; gives one
+# consistent SHA-1 across all build environments). Never commit a release key.
+!keystore/debug.keystore

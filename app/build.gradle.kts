@@ -24,6 +24,19 @@ android {
             (project.findProperty("MAPS_API_KEY") as String?) ?: ""
     }
 
+    signingConfigs {
+        // Shared, committed debug keystore so every build environment (Windows,
+        // MacInCloud, CI) signs debug builds with the SAME key → one SHA-1
+        // registered in Firebase works everywhere. Debug key = throwaway, safe
+        // to commit; the release key is NOT committed (see .gitignore).
+        getByName("debug") {
+            storeFile = file("$rootDir/keystore/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
