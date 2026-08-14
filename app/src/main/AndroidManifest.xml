@@ -2,8 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Location intentionally NOT requested in this release: the map centers on
+         the region and there is no "near me" feature yet, so no location is
+         collected (keeps the Play Data Safety declaration clean). Re-add
+         ACCESS_COARSE/FINE_LOCATION when a my-location feature ships. -->
 
     <application
         android:name=".STierApp"
