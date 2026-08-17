@@ -20,9 +20,9 @@ enum class Tier(val rawValue: String, val score: Int) {
         fun fromRaw(raw: String?): Tier? = entries.firstOrNull { it.rawValue == raw }
 
         /**
-         * Consensus tier from an average score. Round-to-nearest — VERIFY this
-         * matches iOS `Tier.from(averageScore:)` in Enums.swift before relying
-         * on cross-platform board parity.
+         * Consensus tier from an average score. Boundaries VERIFIED to match
+         * iOS `Tier.from(averageScore:)` exactly (S≥4.5, A[3.5,4.5), B[2.5,3.5),
+         * C[1.5,2.5), F<1.5) so cross-platform boards agree.
          */
         fun fromAverage(avg: Double): Tier = when {
             avg >= 4.5 -> S

@@ -9,6 +9,21 @@ android {
     namespace = "com.compofelice.stiereats"
     compileSdk = 35
 
+    // Secrets/config from local.properties (gitignored) with an env-var
+    // fallback for CI. Simple line-parse — the java.util.Properties().apply{}
+    // form breaks Kotlin-DSL type inference here.
+    val localProps: Map<String, String> = rootProject.file("local.properties")
+        .takeIf { it.exists() }
+        ?.readLines()
+        ?.mapNotNull { line ->
+            val t = line.trim()
+            if (t.isEmpty() || t.startsWith("#") || !t.contains("=")) null
+            else t.substringBefore("=").trim() to t.substringAfter("=").trim()
+        }
+        ?.toMap()
+        ?: emptyMap()
+    fun secret(key: String): String? = localProps[key] ?: System.getenv(key)
+
     defaultConfig {
         applicationId = "com.compofelice.stiereats"
         minSdk = 26
@@ -17,22 +32,9 @@ android {
         versionName = "1.0"
         vectorDrawables { useSupportLibrary = true }
 
-        // Maps SDK key for the manifest placeholder. Sourced (in order) from
-        // local.properties (gitignored — where you put it locally), a Gradle
-        // property, or the MAPS_API_KEY env var (CI secret). Empty if unset —
-        // map tiles just stay blank, everything else works.
-        val localFile = rootProject.file("local.properties")
-        val fromLocal: String? = if (localFile.exists()) {
-            localFile.readLines()
-                .firstOrNull { it.trimStart().startsWith("MAPS_API_KEY=") }
-                ?.substringAfter("=")
-                ?.trim()
-        } else null
-        val mapsApiKey: String = fromLocal
-            ?: (project.findProperty("MAPS_API_KEY") as String?)
-            ?: System.getenv("MAPS_API_KEY")
-            ?: ""
-        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        // Maps SDK key → manifest placeholder. Empty if unset (map tiles just
+        // stay blank; everything else works).
+        manifestPlaceholders["MAPS_API_KEY"] = secret("MAPS_API_KEY") ?: ""
     }
 
     signingConfigs {
@@ -46,10 +48,28 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // Release (upload) key. Creds come from local.properties / env, and the
+        // keystore itself is gitignored — never committed. Only wired up when
+        // the keystore + password are actually present, so debug/CI builds that
+        // lack them are unaffected.
+        create("release") {
+            val ksFile = rootProject.file(secret("RELEASE_STORE_FILE") ?: "keystore/release.keystore")
+            val ksPass = secret("RELEASE_STORE_PASSWORD")
+            if (ksFile.exists() && ksPass != null) {
+                storeFile = ksFile
+                storePassword = ksPass
+                keyAlias = secret("RELEASE_KEY_ALIAS") ?: "upload"
+                keyPassword = secret("RELEASE_KEY_PASSWORD") ?: ksPass
+            }
+        }
     }
 
     buildTypes {
         release {
+            // Use the release signing config when its creds are present;
+            // otherwise leave unsigned so `assembleDebug`/CI still work.
+            val relSigning = signingConfigs.getByName("release")
+            if (relSigning.storeFile != null) signingConfig = relSigning
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
