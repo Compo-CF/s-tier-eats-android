@@ -10,14 +10,14 @@ handling changes (e.g. when AdMob, photos, or a location feature ship).
 | Question | Answer |
 |---|---|
 | Does your app collect or share any of the required user data types? | **Yes** |
-| Is all of the user data collected by your app encrypted in transit? | **Yes** (Firestore + Firebase Auth use HTTPS/TLS) |
+| Is all of the user data collected by your app encrypted in transit? | **Yes** (Firestore + Firebase Auth + AdMob use HTTPS/TLS) |
 | Do you provide a way for users to request that their data be deleted? | **Yes** — deletion URL: `https://compo-cf.github.io/woodlands-eats/android-account-deletion.html` |
 
 ## Data collected
 
-Only declare these. Nothing is **shared** (Google Firestore/Firebase is our
-processor/infrastructure, which is not "sharing" under Play's definition —
-transfer to a third party *for their own use*). Nothing is processed ephemerally.
+Firestore/Firebase is our processor (not "sharing"). AdMob **is** a third party
+for its own use, so the ad identifier below is declared as both collected AND
+shared. Nothing is processed ephemerally.
 
 ### Personal info → Name
 - Collected: **Yes** · Shared: **No**
@@ -38,13 +38,19 @@ transfer to a third party *for their own use*). Nothing is processed ephemerally
 - Purposes: **App functionality**
 - Linked to the user's identity: **Yes**
 
+### Device or other IDs (AdMob banner)
+- Collected: **Yes** · Shared: **Yes** (Google AdMob receives it)
+- Required (the banner shows to all users; ads are non-personalized, npa=1, but AdMob still uses a device/ad identifier for frequency capping + fraud prevention)
+- Purposes: **Advertising or marketing**, **Fraud prevention, security, and compliance**
+- Linked to the user's identity: **No** (not joined to the account/Firestore data)
+- Follow Google's published AdMob Data Safety guidance if the Console offers a prefilled list.
+
 ## Data NOT collected (do not declare)
-- **Location** — not collected this release (no "near me"; map centers on region; location permission removed from the manifest).
+- **Location** — not collected this release (no "near me"; map centers on region; location permission removed from the manifest). AdMob may infer coarse region from IP, but the app does not collect device location.
 - **Photos/videos** — Android release has no photo upload/viewing yet.
 - **Financial info, Contacts, Messages, Calendar, Files, Health, Web history** — none.
-- **Device or other IDs** (advertising ID / device ID) — none; no ads, no analytics SDKs. (The Firebase UID is declared above under User IDs, not here.)
+- (The Firebase UID is declared under **User IDs** above, not under Device IDs.)
 
 ## ⚠️ Update triggers
-- **AdMob added** → declare Device or other IDs (+ possibly approximate location/diagnostics per AdMob's Data Safety guidance) and update the privacy policy's advertising section.
 - **Photo viewing/upload added** → declare Photos and add in-app report/block (UGC).
 - **"Near me"/location added** → re-add location permission + declare Location.

@@ -28,7 +28,7 @@ android {
         applicationId = "com.compofelice.stiereats"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
         vectorDrawables { useSupportLibrary = true }
 
@@ -113,6 +113,7 @@ dependencies {
     implementation(libs.maps.compose.utils)
     implementation(libs.play.services.maps)
     implementation(libs.coil.compose)
+    implementation(libs.play.services.ads)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.kotlinx.coroutines.android)
 }

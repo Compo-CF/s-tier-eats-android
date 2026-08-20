@@ -14,6 +14,7 @@ mapsCompose = "6.2.1"
 playServicesMaps = "19.0.0"
 coil = "2.7.0"
 kotlinxCoroutines = "1.9.0"
+playServicesAds = "23.6.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -43,6 +44,7 @@ maps-compose-utils = { group = "com.google.maps.android", name = "maps-compose-u
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 

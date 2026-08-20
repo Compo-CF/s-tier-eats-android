@@ -1,12 +1,15 @@
 package com.compofelice.stiereats.ui.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.compofelice.stiereats.data.Restaurant
 import com.compofelice.stiereats.ui.AppViewModel
+import com.compofelice.stiereats.ui.BannerAd
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.clustering.ClusterItem
@@ -39,16 +42,19 @@ fun MapScreen(
     }
     val items = remember(vm.restaurants) { vm.restaurants.map { RestaurantClusterItem(it) } }
 
-    GoogleMap(
-        modifier = modifier.fillMaxSize(),
-        cameraPositionState = cameraPositionState,
-    ) {
-        Clustering(
-            items = items,
-            onClusterItemClick = { item ->
-                onOpen(item.r.id)
-                true
-            },
-        )
+    Column(modifier.fillMaxSize()) {
+        GoogleMap(
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            cameraPositionState = cameraPositionState,
+        ) {
+            Clustering(
+                items = items,
+                onClusterItemClick = { item ->
+                    onOpen(item.r.id)
+                    true
+                },
+            )
+        }
+        BannerAd(Modifier.fillMaxWidth())
     }
 }

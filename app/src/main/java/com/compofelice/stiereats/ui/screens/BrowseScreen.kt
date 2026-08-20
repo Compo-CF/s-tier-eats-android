@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.compofelice.stiereats.data.Restaurant
 import com.compofelice.stiereats.ui.AppViewModel
+import com.compofelice.stiereats.ui.BannerAd
 import com.compofelice.stiereats.ui.TierBadge
 
 @Composable
@@ -76,12 +77,13 @@ fun BrowseScreen(
             modifier = Modifier.padding(horizontal = 16.dp),
         )
         Spacer(Modifier.height(4.dp))
-        LazyColumn(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.weight(1f)) {
             items(filtered, key = { it.id }) { r ->
                 RestaurantRow(r, vm.myPlacements[r.id]?.let { it }, onOpen)
                 HorizontalDivider()
             }
         }
+        BannerAd(Modifier.fillMaxWidth())
     }
 }
 
