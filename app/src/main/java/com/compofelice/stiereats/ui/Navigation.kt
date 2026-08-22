@@ -71,7 +71,7 @@ fun AppNav(vm: AppViewModel) {
     ) { padding ->
         NavHost(
             navController = nav,
-            startDestination = "browse",
+            startDestination = "map",
             modifier = Modifier.padding(padding),
         ) {
             val open: (String) -> Unit = { id -> nav.navigate("detail/$id") }
