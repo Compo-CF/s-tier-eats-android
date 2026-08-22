@@ -22,6 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.compofelice.stiereats.ui.screens.AdminScreen
 import com.compofelice.stiereats.ui.screens.BrowseScreen
 import com.compofelice.stiereats.ui.screens.CommunityScreen
 import com.compofelice.stiereats.ui.screens.DetailScreen
@@ -79,7 +80,8 @@ fun AppNav(vm: AppViewModel) {
             composable("browse") { BrowseScreen(vm, open) }
             composable("mytiers") { MyTiersScreen(vm, open) }
             composable("community") { CommunityScreen(vm, open) }
-            composable("profile") { ProfileScreen(vm) }
+            composable("profile") { ProfileScreen(vm, onOpenAdmin = { nav.navigate("admin") }) }
+            composable("admin") { AdminScreen(vm, onBack = { nav.popBackStack() }) }
             composable("detail/{id}") { entry ->
                 DetailScreen(
                     restaurantId = entry.arguments?.getString("id") ?: "",

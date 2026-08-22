@@ -12,6 +12,7 @@ import com.compofelice.stiereats.data.CatalogRepository
 import com.compofelice.stiereats.data.CommunityTier
 import com.compofelice.stiereats.data.DietaryTag
 import com.compofelice.stiereats.data.FirestoreRepository
+import com.compofelice.stiereats.data.ProStatus
 import com.compofelice.stiereats.data.Restaurant
 import com.compofelice.stiereats.data.Tier
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     var isSignedIn by mutableStateOf(auth.isSignedIn); private set
     var displayName by mutableStateOf(auth.displayName); private set
+    var proStatus by mutableStateOf(ProStatus.NONE); private set
+    var isAdmin by mutableStateOf(false); private set
 
     var catalogLoading by mutableStateOf(true); private set
 
@@ -62,6 +65,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             myPlacements = repo.myPlacements()
             visited = repo.visitedList()
+            proStatus = repo.myProStatus()
+            isAdmin = repo.isAdmin()
         }
     }
 
@@ -83,6 +88,25 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         displayName = null
         myPlacements = emptyMap()
         visited = emptySet()
+        proStatus = ProStatus.NONE
+        isAdmin = false
+    }
+
+    fun requestFoodiePro() {
+        proStatus = ProStatus.REQUESTED
+        viewModelScope.launch { repo.requestFoodiePro() }
+    }
+
+    // ── Admin ────────────────────────────────────────────────────
+    suspend fun proLists() = repo.fetchProLists()
+    suspend fun adminStats() = repo.adminStats()
+
+    fun approvePro(userID: String, onDone: () -> Unit) {
+        viewModelScope.launch { repo.approvePro(userID); onDone() }
+    }
+
+    fun revokePro(userID: String, onDone: () -> Unit) {
+        viewModelScope.launch { repo.revokePro(userID); onDone() }
     }
 
     // ── Writes (optimistic) ──────────────────────────────────────

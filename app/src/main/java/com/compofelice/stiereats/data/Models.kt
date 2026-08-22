@@ -34,6 +34,9 @@ enum class Tier(val rawValue: String, val score: Int) {
     }
 }
 
+/** The current user's Foodie Pro standing. */
+enum class ProStatus { NONE, REQUESTED, APPROVED }
+
 /** Community consensus for one restaurant. */
 data class CommunityTier(
     val tier: Tier,

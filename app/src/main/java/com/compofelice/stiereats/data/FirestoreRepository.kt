@@ -289,4 +289,103 @@ class FirestoreRepository(
         runCatching { auth.currentUser?.delete()?.await() }
         runCatching { auth.signOut() }
     }
+
+    // ── Foodie Pro (request + admin approval) ────────────────────
+    /** True if this user is flagged admin in users/{uid}.isAdmin. */
+    suspend fun isAdmin(): Boolean {
+        val me = uid ?: return false
+        return try {
+            db.collection("users").document(me).get().await().getBoolean("isAdmin") == true
+        } catch (_: Exception) { false }
+    }
+
+    /** The current user's Pro standing (approved wins over requested). */
+    suspend fun myProStatus(): ProStatus {
+        val me = uid ?: return ProStatus.NONE
+        return try {
+            if (db.collection("proApprovals").document(me).get().await().exists())
+                return ProStatus.APPROVED
+            val profile = db.collection("profiles").document(me).get().await()
+            if (profile.getString("status") == "requested") ProStatus.REQUESTED else ProStatus.NONE
+        } catch (_: Exception) { ProStatus.NONE }
+    }
+
+    /** Mark the current user's profile as requesting Foodie Pro. */
+    suspend fun requestFoodiePro() {
+        val me = uid ?: return
+        runCatching {
+            db.collection("profiles").document(me).set(
+                hashMapOf(
+                    "userID" to me,
+                    "status" to "requested",
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+                com.google.firebase.firestore.SetOptions.merge(),
+            ).await()
+        }
+    }
+
+    data class ProUser(val userID: String, val displayName: String)
+    data class ProLists(val pending: List<ProUser>, val approved: List<ProUser>)
+
+    /** Admin: users who requested Pro (pending) + everyone approved. */
+    suspend fun fetchProLists(): ProLists {
+        return try {
+            val reqSnap = db.collection("profiles").whereEqualTo("status", "requested").get().await()
+            val apprSnap = db.collection("proApprovals").get().await()
+            val approvedIds = apprSnap.documents.map { it.id }.toSet()
+            val nameByUid = HashMap<String, String>()
+            for (d in reqSnap.documents) {
+                nameByUid[d.getString("userID") ?: d.id] = d.getString("displayName")?.ifBlank { null } ?: "(no name)"
+            }
+            val pending = reqSnap.documents.mapNotNull { d ->
+                val u = d.getString("userID") ?: d.id
+                if (u in approvedIds) null else ProUser(u, nameByUid[u] ?: "(no name)")
+            }
+            val approved = approvedIds.map { u -> ProUser(u, nameByUid[u] ?: u.take(10)) }
+            ProLists(pending, approved)
+        } catch (_: Exception) { ProLists(emptyList(), emptyList()) }
+    }
+
+    suspend fun approvePro(userID: String) {
+        val me = uid ?: return
+        runCatching {
+            db.collection("proApprovals").document(userID).set(
+                hashMapOf(
+                    "userID" to userID,
+                    "approvedAt" to FieldValue.serverTimestamp(),
+                    "approvedBy" to me,
+                ),
+                com.google.firebase.firestore.SetOptions.merge(),
+            ).await()
+        }
+    }
+
+    suspend fun revokePro(userID: String) {
+        runCatching { db.collection("proApprovals").document(userID).delete().await() }
+    }
+
+    // ── Admin dashboard stats (cheap server-side counts) ─────────
+    data class AdminStats(
+        val placements: Long,
+        val profiles: Long,
+        val approvedPros: Long,
+        val pendingPros: Long,
+        val closureReports: Long,
+        val dietaryTags: Long,
+    )
+
+    private suspend fun count(query: com.google.firebase.firestore.Query): Long = try {
+        query.count().get(com.google.firebase.firestore.AggregateSource.SERVER).await().count
+    } catch (_: Exception) { -1L }
+
+    /** Server-side aggregate counts (1 read each — no full scans). */
+    suspend fun adminStats(): AdminStats = AdminStats(
+        placements = count(db.collection("placements")),
+        profiles = count(db.collection("profiles")),
+        approvedPros = count(db.collection("proApprovals")),
+        pendingPros = count(db.collection("profiles").whereEqualTo("status", "requested")),
+        closureReports = count(db.collection("closureReports")),
+        dietaryTags = count(db.collection("dietaryTags")),
+    )
 }
