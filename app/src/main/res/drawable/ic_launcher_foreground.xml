@@ -3,8 +3,10 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Three stacked "tier" bars, white on the indigo background. -->
-    <path android:fillColor="#FFFFFF" android:pathData="M34,40 h40 v8 h-40 z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M34,52 h40 v8 h-40 z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M34,64 h40 v8 h-40 z" />
+    <!-- Five tier bars, S=red … F=purple, matching the in-app tier palette. -->
+    <path android:fillColor="#E23B3B" android:pathData="M30,24 h48 v9 h-48 z" />
+    <path android:fillColor="#EE7A2E" android:pathData="M30,37 h48 v9 h-48 z" />
+    <path android:fillColor="#E0C23A" android:pathData="M30,50 h48 v9 h-48 z" />
+    <path android:fillColor="#4FB477" android:pathData="M30,63 h48 v9 h-48 z" />
+    <path android:fillColor="#8C59C7" android:pathData="M30,76 h48 v9 h-48 z" />
 </vector>
