@@ -65,12 +65,9 @@ fun MapScreen(
                         true
                     }
                 }
-                LaunchedEffect(clusterManager, items) {
-                    clusterManager.clearItems()
-                    clusterManager.addItems(items)
-                    clusterManager.cluster()
-                }
-                Clustering(clusterManager = clusterManager)
+                // This overload syncs `items` into the manager itself and wires
+                // the map's camera/marker listeners to it.
+                Clustering(items = items, clusterManager = clusterManager)
             }
         }
         BannerAd(Modifier.fillMaxWidth())
