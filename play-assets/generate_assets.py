@@ -55,20 +55,18 @@ def rounded_badge(letter, color, size, radius=None, font_frac=0.6):
     return img
 
 
-# ── App icon 512x512 — full-bleed S-tier red with a bold white S ──
+# ── App icon 512x512 — five tier bars (S..F) on dark, matches the launcher ──
 def make_icon():
     S = 512
-    icon = vgrad(S, S, (240, 74, 74), (196, 47, 46)).convert("RGBA")
+    icon = Image.new("RGBA", (S, S), (34, 34, 43, 255))  # #22222B
     d = ImageDraw.Draw(icon)
-    f = ImageFont.truetype(BLACK, 380)
-    letter = "S"
-    bbox = d.textbbox((0, 0), letter, font=f)
-    tw, th = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    x = (S - tw) / 2 - bbox[0]
-    y = (S - th) / 2 - bbox[1] - 10
-    # soft shadow
-    d.text((x + 6, y + 8), letter, font=f, fill=(120, 20, 20, 120))
-    d.text((x, y), letter, font=f, fill="white")
+    bar_w, bar_h, gap, radius = 300, 44, 20, 14
+    total_h = len(TIERS) * bar_h + (len(TIERS) - 1) * gap
+    x0 = (S - bar_w) // 2
+    y = (S - total_h) // 2
+    for _, color in TIERS:
+        d.rounded_rectangle([x0, y, x0 + bar_w, y + bar_h], radius=radius, fill=color)
+        y += bar_h + gap
     icon.convert("RGB").save(os.path.join(OUT, "icon-512.png"))
     print("wrote icon-512.png")
 
