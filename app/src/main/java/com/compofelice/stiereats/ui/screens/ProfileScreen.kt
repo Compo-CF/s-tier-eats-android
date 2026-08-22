@@ -59,6 +59,9 @@ fun ProfileScreen(vm: AppViewModel, modifier: Modifier = Modifier) {
 
         if (vm.isSignedIn) {
             var name by remember { mutableStateOf(vm.displayName ?: "") }
+            // Tracks the last-persisted name so the button can show clear
+            // "Saved ✓" feedback (the write itself is silent/optimistic).
+            var savedName by remember { mutableStateOf(vm.displayName ?: "") }
             Text(
                 "Signed in",
                 style = MaterialTheme.typography.titleMedium,
@@ -78,11 +81,16 @@ fun ProfileScreen(vm: AppViewModel, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(12.dp))
+            val isSaved = name.trim() == savedName && name.isNotBlank()
             Button(
-                onClick = { vm.saveDisplayName(name.trim()) },
-                enabled = name.isNotBlank(),
+                onClick = {
+                    val trimmed = name.trim()
+                    vm.saveDisplayName(trimmed)
+                    savedName = trimmed
+                },
+                enabled = name.isNotBlank() && !isSaved,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Save name") }
+            ) { Text(if (isSaved) "Saved ✓" else "Save name") }
             Spacer(Modifier.height(8.dp))
             OutlinedButton(
                 onClick = { vm.signOut() },
