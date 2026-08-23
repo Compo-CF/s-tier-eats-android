@@ -7,7 +7,12 @@ plugins {
 
 android {
     namespace = "com.compofelice.stiereats"
-    compileSdk = 35
+    // API 36 (Android 16): required by Google Play's target-API bar effective
+    // Aug 31, 2026 (was API 35). targetSdk must be ≤ compileSdk, so both move
+    // together. AGP 8.7.3 predates API 36, so gradle.properties carries
+    // android.suppressUnsupportedCompileSdk=36 to silence the "untested SDK"
+    // warning — safe here because we use no API-36-specific APIs.
+    compileSdk = 36
 
     // Secrets/config from local.properties (gitignored) with an env-var
     // fallback for CI. Simple line-parse — the java.util.Properties().apply{}
@@ -27,9 +32,9 @@ android {
     defaultConfig {
         applicationId = "com.compofelice.stiereats"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 3
-        versionName = "1.0"
+        targetSdk = 36
+        versionCode = 4
+        versionName = "1.0.1"
         vectorDrawables { useSupportLibrary = true }
 
         // Maps SDK key → manifest placeholder. Empty if unset (map tiles just
