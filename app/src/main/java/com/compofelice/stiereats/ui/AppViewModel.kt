@@ -97,6 +97,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.requestFoodiePro() }
     }
 
+    /** The signed-in user's Firebase UID (their account id), or null. */
+    fun accountId(): String? = repo.currentUid()
+
+    /** Submit a "missing restaurant" suggestion for admin review. */
+    suspend fun submitSuggestion(
+        name: String,
+        address: String,
+        area: String,
+        cuisines: List<String>,
+        description: String,
+    ): String? = repo.submitSuggestion(name, address, area, cuisines, description)
+
     // ── Admin ────────────────────────────────────────────────────
     suspend fun proLists() = repo.fetchProLists()
     suspend fun adminStats() = repo.adminStats()

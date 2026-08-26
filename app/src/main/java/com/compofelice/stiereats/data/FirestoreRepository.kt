@@ -24,6 +24,9 @@ class FirestoreRepository(
 ) {
     private val uid: String? get() = auth.currentUser?.uid
 
+    /** The current user's Firebase Auth UID (their Firestore key), or null. */
+    fun currentUid(): String? = uid
+
     // ── Admin exclusions (cached) ────────────────────────────────
     private var exclBannedUsers: Set<String> = emptySet()
     private var exclPlacementNames: Set<String> = emptySet()
@@ -263,6 +266,39 @@ class FirestoreRepository(
             db.collection("profiles").document(me)
                 .set(data, com.google.firebase.firestore.SetOptions.merge()).await()
         }
+    }
+
+    // ── Suggestions (user-submitted missing restaurants) ─────────
+    /**
+     * Writes a "missing restaurant" suggestion. Mirrors iOS
+     * FirebaseService.saveSuggestion exactly (same fields, status "pending" —
+     * the security rule requires that on create). Returns the new doc id, or
+     * null if not signed in / the write failed.
+     */
+    suspend fun submitSuggestion(
+        name: String,
+        address: String,
+        area: String,
+        cuisines: List<String>,
+        description: String,
+    ): String? {
+        val me = uid ?: return null
+        val docRef = db.collection("suggestions").document()
+        return runCatching {
+            docRef.set(
+                hashMapOf(
+                    "name" to name,
+                    "address" to address,
+                    "area" to area,
+                    "cuisines" to cuisines,
+                    "description" to description,
+                    "submitterUserID" to me,
+                    "status" to "pending",
+                    "createdAt" to FieldValue.serverTimestamp(),
+                )
+            ).await()
+            docRef.id
+        }.getOrNull()
     }
 
     // ── Account deletion (Play requirement for apps with sign-in) ────

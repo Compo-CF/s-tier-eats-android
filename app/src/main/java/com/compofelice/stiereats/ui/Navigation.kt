@@ -22,13 +22,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.compofelice.stiereats.ui.screens.AboutScreen
 import com.compofelice.stiereats.ui.screens.AdminScreen
 import com.compofelice.stiereats.ui.screens.BrowseScreen
 import com.compofelice.stiereats.ui.screens.CommunityScreen
 import com.compofelice.stiereats.ui.screens.DetailScreen
 import com.compofelice.stiereats.ui.screens.MapScreen
+import com.compofelice.stiereats.ui.screens.MyStatsScreen
 import com.compofelice.stiereats.ui.screens.MyTiersScreen
 import com.compofelice.stiereats.ui.screens.ProfileScreen
+import com.compofelice.stiereats.ui.screens.SuggestScreen
+import com.compofelice.stiereats.ui.screens.TierGuideScreen
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
 
@@ -80,8 +84,23 @@ fun AppNav(vm: AppViewModel) {
             composable("browse") { BrowseScreen(vm, open) }
             composable("mytiers") { MyTiersScreen(vm, open) }
             composable("community") { CommunityScreen(vm, open) }
-            composable("profile") { ProfileScreen(vm, onOpenAdmin = { nav.navigate("admin") }) }
+            composable("profile") {
+                ProfileScreen(
+                    vm,
+                    onOpenAdmin = { nav.navigate("admin") },
+                    onOpenStats = { nav.navigate("stats") },
+                    onOpenSuggest = { nav.navigate("suggest") },
+                    onOpenTierGuide = { nav.navigate("tierguide") },
+                    onOpenAbout = { nav.navigate("about") },
+                    onReplayIntro = { nav.navigate("onboarding") },
+                )
+            }
             composable("admin") { AdminScreen(vm, onBack = { nav.popBackStack() }) }
+            composable("stats") { MyStatsScreen(vm, onBack = { nav.popBackStack() }) }
+            composable("suggest") { SuggestScreen(vm, onBack = { nav.popBackStack() }) }
+            composable("tierguide") { TierGuideScreen(onBack = { nav.popBackStack() }) }
+            composable("about") { AboutScreen(onBack = { nav.popBackStack() }) }
+            composable("onboarding") { OnboardingScreen(onDone = { nav.popBackStack() }) }
             composable("detail/{id}") { entry ->
                 DetailScreen(
                     restaurantId = entry.arguments?.getString("id") ?: "",

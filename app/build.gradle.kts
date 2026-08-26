@@ -33,8 +33,8 @@ android {
         applicationId = "com.compofelice.stiereats"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.1"
+        versionCode = 5
+        versionName = "1.1"
         vectorDrawables { useSupportLibrary = true }
 
         // Maps SDK key → manifest placeholder. Empty if unset (map tiles just
@@ -87,7 +87,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true   // AboutScreen reads BuildConfig.VERSION_NAME/CODE
+    }
 }
 
 dependencies {
