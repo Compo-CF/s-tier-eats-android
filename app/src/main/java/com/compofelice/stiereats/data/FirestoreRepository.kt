@@ -194,12 +194,52 @@ class FirestoreRepository(
             db.collection("placements").document("${me}_$restaurantId")
                 .set(data, com.google.firebase.firestore.SetOptions.merge()).await()
         }
+        recomputeConsensus(restaurantId)
     }
 
     suspend fun removePlacement(restaurantId: String) {
         val me = uid ?: return
         runCatching {
             db.collection("placements").document("${me}_$restaurantId").delete().await()
+        }
+        recomputeConsensus(restaurantId)
+    }
+
+    /**
+     * Recompute the Everyone-board consensus doc for ONE restaurant from its own
+     * placements, honoring admin exclusions. Mirrors iOS FirebaseService
+     * .recomputeConsensus so writes from either platform keep consensus/{rid}
+     * fresh (iOS reads it for the cheap Everyone board). Best-effort.
+     */
+    private suspend fun recomputeConsensus(restaurantId: String) {
+        loadExclusionsIfNeeded()
+        runCatching {
+            val snap = db.collection("placements")
+                .whereEqualTo("restaurantID", restaurantId).get().await()
+            var total = 0; var count = 0
+            for (doc in snap.documents) {
+                val score = (doc.getLong("score") ?: continue).toInt()
+                val owner = doc.getString("userID") ?: ""
+                if (owner in exclBannedUsers) continue
+                if ("placement_${owner}_$restaurantId" in exclPlacementNames) continue
+                total += score; count++
+            }
+            val ref = db.collection("consensus").document(restaurantId)
+            if (count == 0) {
+                ref.delete().await()
+            } else {
+                val avg = total.toDouble() / count
+                ref.set(
+                    hashMapOf(
+                        "restaurantID" to restaurantId,
+                        "total" to total,
+                        "count" to count,
+                        "average" to avg,
+                        "tier" to Tier.fromAverage(avg).rawValue,
+                        "updatedAt" to FieldValue.serverTimestamp(),
+                    )
+                ).await()
+            }
         }
     }
 
