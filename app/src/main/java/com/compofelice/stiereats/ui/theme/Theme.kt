@@ -1,10 +1,13 @@
 package com.compofelice.stiereats.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 // Tier palette — S=red, A=orange, B=yellow, C=green, F=purple (matches iOS).
@@ -30,6 +33,15 @@ fun STierEatsTheme(
 ) {
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColors else LightColors,
-        content = content,
-    )
+    ) {
+        // Wrap in a Surface so LocalContentColor tracks the theme's
+        // onBackground. Without it, default (uncolored) Text falls back to
+        // black — which is why every default text was dark-on-dark in dark
+        // mode. This one wrap fixes contrast app-wide.
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
+            content = content,
+        )
+    }
 }

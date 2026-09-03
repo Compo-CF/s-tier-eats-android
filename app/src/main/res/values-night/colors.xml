@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark window background (matches Material3 dark surface) so there is no
+         white flash / white inset area behind Compose in dark mode. -->
+    <color name="window_bg">#FF121212</color>
+</resources>

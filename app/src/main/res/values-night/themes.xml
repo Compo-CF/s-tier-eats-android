@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Window-chrome theme for the launch Activity. Compose (STierEatsTheme)
-         drives the actual UI colors; this only styles the window. -->
-    <style name="Theme.STierEats" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- Night variant: dark parent so framework window decor matches dark mode.
+         Compose (STierEatsTheme) still drives the actual UI colors. -->
+    <style name="Theme.STierEats" parent="android:Theme.Material.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@color/window_bg</item>

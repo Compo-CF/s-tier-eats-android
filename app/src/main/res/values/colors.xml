@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#22222B</color>
+    <!-- Window background behind Compose. Light default; see values-night for dark. -->
+    <color name="window_bg">#FFFFFFFF</color>
 </resources>
