@@ -1,5 +1,7 @@
 package com.compofelice.stiereats.ui.screens
 
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.compofelice.stiereats.data.CommunityTier
@@ -52,6 +55,7 @@ fun DetailScreen(
     onBack: () -> Unit,
 ) {
     val r = vm.restaurantsById[restaurantId]
+    val context = LocalContext.current
     var community by remember { mutableStateOf<CommunityTier?>(null) }
     var dietaryCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var myDietary by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -113,16 +117,24 @@ fun DetailScreen(
                     Tier.entries.forEach { t ->
                         val selected = myTier == t
                         Box(
-                            Modifier.size(if (selected) 52.dp else 44.dp),
+                            Modifier.size(if (selected) 54.dp else 44.dp),
                             contentAlignment = Alignment.Center,
                         ) {
                             androidx.compose.material3.Surface(
                                 onClick = {
-                                    if (selected) vm.removePlacement(restaurantId)
-                                    else vm.place(restaurantId, t)
+                                    if (selected) {
+                                        vm.removePlacement(restaurantId)
+                                        Toast.makeText(context, "Removed from your tiers", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        vm.place(restaurantId, t)
+                                        Toast.makeText(context, "Saved to your ${t.rawValue} tier", Toast.LENGTH_SHORT).show()
+                                    }
                                 },
                                 color = tierColor(t),
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                // S-01: make the chosen tier unmistakable — a white ring
+                                // (the size bump alone was too subtle next to the chips).
+                                border = if (selected) BorderStroke(3.dp, androidx.compose.ui.graphics.Color.White) else null,
                                 modifier = Modifier.fillMaxSize(),
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -136,6 +148,33 @@ fun DetailScreen(
                         }
                     }
                 }
+                if (myTier != null) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        "Your pick: ${myTier.rawValue}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = tierColor(myTier),
+                    )
+                }
+
+                // M-01: mark visited — the Profile/My Stats "Visited" stat had no
+                // control anywhere, so it always read 0. This wires it up.
+                Spacer(Modifier.height(14.dp))
+                val isVisited = restaurantId in vm.visited
+                FilterChip(
+                    selected = isVisited,
+                    onClick = {
+                        vm.toggleVisited(restaurantId)
+                        Toast.makeText(
+                            context,
+                            if (isVisited) "Removed from visited" else "Marked as visited",
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    },
+                    label = { Text(if (isVisited) "Visited" else "Mark visited") },
+                    leadingIcon = if (isVisited) { { Icon(Icons.Filled.Check, null, Modifier.size(16.dp)) } } else null,
+                )
             }
             Spacer(Modifier.height(20.dp))
 

@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.compofelice.stiereats.data.Restaurant
 import com.compofelice.stiereats.ui.AppViewModel
@@ -38,6 +40,7 @@ import com.compofelice.stiereats.ui.TierBadge
 fun BrowseScreen(
     vm: AppViewModel,
     onOpen: (String) -> Unit,
+    onSuggest: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var query by remember { mutableStateOf("") }
@@ -77,10 +80,35 @@ fun BrowseScreen(
             modifier = Modifier.padding(horizontal = 16.dp),
         )
         Spacer(Modifier.height(4.dp))
-        LazyColumn(Modifier.weight(1f)) {
-            items(filtered, key = { it.id }) { r ->
-                RestaurantRow(r, vm.myPlacements[r.id]?.let { it }, onOpen)
-                HorizontalDivider()
+        if (filtered.isEmpty() && q.isNotEmpty()) {
+            // M-02: a no-match search used to leave a near-blank screen. Give it
+            // a clear message and point the user at Suggest-a-restaurant.
+            Column(
+                Modifier.weight(1f).fillMaxWidth().padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    "No restaurants found",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Nothing matches “$query”. Know a spot that should be here?",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(16.dp))
+                Button(onClick = onSuggest) { Text("Suggest a missing restaurant") }
+            }
+        } else {
+            LazyColumn(Modifier.weight(1f)) {
+                items(filtered, key = { it.id }) { r ->
+                    RestaurantRow(r, vm.myPlacements[r.id]?.let { it }, onOpen)
+                    HorizontalDivider()
+                }
             }
         }
         BannerAd(Modifier.fillMaxWidth())

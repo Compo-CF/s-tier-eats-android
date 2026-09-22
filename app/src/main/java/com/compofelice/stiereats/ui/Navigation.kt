@@ -81,7 +81,7 @@ fun AppNav(vm: AppViewModel) {
         ) {
             val open: (String) -> Unit = { id -> nav.navigate("detail/$id") }
             composable("map") { MapScreen(vm, open) }
-            composable("browse") { BrowseScreen(vm, open) }
+            composable("browse") { BrowseScreen(vm, open, onSuggest = { nav.navigate("suggest") }) }
             composable("mytiers") { MyTiersScreen(vm, open) }
             composable("community") { CommunityScreen(vm, open) }
             composable("profile") {

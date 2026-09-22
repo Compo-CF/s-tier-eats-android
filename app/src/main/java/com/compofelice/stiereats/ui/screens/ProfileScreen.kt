@@ -149,6 +149,7 @@ private fun SignedInProfile(
     var name by remember { mutableStateOf(vm.displayName ?: "") }
     var savedName by remember { mutableStateOf(vm.displayName ?: "") }
     var confirmDelete by remember { mutableStateOf(false) }
+    var confirmSignOut by remember { mutableStateOf(false) }
     var deleting by remember { mutableStateOf(false) }
     var proError by remember { mutableStateOf<String?>(null) }
     val rank = FoodieRank.from(vm.myPlacements.size)
@@ -261,7 +262,7 @@ private fun SignedInProfile(
         }
 
         Spacer(Modifier.height(16.dp))
-        OutlinedButton(onClick = { vm.signOut() }, modifier = Modifier.fillMaxWidth()) { Text("Sign out") }
+        OutlinedButton(onClick = { confirmSignOut = true }, modifier = Modifier.fillMaxWidth()) { Text("Sign out") }
         Spacer(Modifier.height(4.dp))
         TextButton(onClick = { confirmDelete = true }, modifier = Modifier.fillMaxWidth()) {
             Text("Delete account", color = MaterialTheme.colorScheme.error)
@@ -274,6 +275,20 @@ private fun SignedInProfile(
             Text(id, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Spacer(Modifier.height(24.dp))
+
+        if (confirmSignOut) {
+            AlertDialog(
+                onDismissRequest = { confirmSignOut = false },
+                title = { Text("Sign out?") },
+                text = { Text("You can sign back in anytime. Your tiers stay saved to your account.") },
+                confirmButton = {
+                    TextButton(onClick = { confirmSignOut = false; vm.signOut() }) { Text("Sign out") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { confirmSignOut = false }) { Text("Cancel") }
+                },
+            )
+        }
 
         if (confirmDelete) {
             AlertDialog(
