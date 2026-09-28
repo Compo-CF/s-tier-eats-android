@@ -2,10 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Location intentionally NOT requested in this release: the map centers on
-         the region and there is no "near me" feature yet, so no location is
-         collected (keeps the Play Data Safety declaration clean). Re-add
-         ACCESS_COARSE/FINE_LOCATION when a my-location feature ships. -->
+    <!-- COARSE location powers "Top-rated near me" and "Plan a Night Out" near-me
+         mode (v1.3). Approximate location is enough for distance sorting/filtering
+         and keeps the Play Data Safety footprint minimal. It is requested at
+         runtime only when the user opens one of those features; the app works
+         fully (search by area) if declined.
+         WARNING: Play Data Safety MUST declare "Approximate location - App
+         functionality, not shared" for this release or the update can be rejected. -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:name=".STierApp"

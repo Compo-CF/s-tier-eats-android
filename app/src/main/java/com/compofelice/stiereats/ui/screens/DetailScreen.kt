@@ -1,5 +1,9 @@
 package com.compofelice.stiereats.ui.screens
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +21,13 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Directions
+import androidx.compose.material.icons.filled.EventSeat
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
@@ -28,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -59,6 +70,7 @@ fun DetailScreen(
     var community by remember { mutableStateOf<CommunityTier?>(null) }
     var dietaryCounts by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
     var myDietary by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var showOrderPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(restaurantId) {
         community = vm.communityTier(restaurantId)
@@ -101,6 +113,76 @@ fun DetailScreen(
                 Text(r.address, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(16.dp))
+
+            // Quick actions — call / directions / website / order / reserve, the
+            // "act on this place" row iOS has (RestaurantDetailView + DeliveryPickerSheet).
+            val phone = r.phone
+            val website = r.website
+            Row(
+                Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                AssistChip(
+                    onClick = {
+                        launchUri(
+                            context,
+                            "https://www.google.com/maps/dir/?api=1&destination=${r.latitude},${r.longitude}",
+                        )
+                    },
+                    label = { Text("Directions") },
+                    leadingIcon = { Icon(Icons.Filled.Directions, null, Modifier.size(18.dp)) },
+                )
+                if (!phone.isNullOrBlank()) {
+                    AssistChip(
+                        onClick = { launchDial(context, phone) },
+                        label = { Text("Call") },
+                        leadingIcon = { Icon(Icons.Filled.Call, null, Modifier.size(18.dp)) },
+                    )
+                }
+                if (!website.isNullOrBlank()) {
+                    AssistChip(
+                        onClick = { launchUri(context, website) },
+                        label = { Text("Website") },
+                        leadingIcon = { Icon(Icons.Filled.Language, null, Modifier.size(18.dp)) },
+                    )
+                }
+                AssistChip(
+                    onClick = { showOrderPicker = true },
+                    label = { Text("Order") },
+                    leadingIcon = { Icon(Icons.Filled.ShoppingBag, null, Modifier.size(18.dp)) },
+                )
+                AssistChip(
+                    onClick = {
+                        launchUri(context, "https://www.opentable.com/s?term=${Uri.encode(r.name)}")
+                    },
+                    label = { Text("Reserve") },
+                    leadingIcon = { Icon(Icons.Filled.EventSeat, null, Modifier.size(18.dp)) },
+                )
+            }
+            Spacer(Modifier.height(20.dp))
+
+            if (showOrderPicker) {
+                AlertDialog(
+                    onDismissRequest = { showOrderPicker = false },
+                    title = { Text("Order from…") },
+                    text = { Text("Open a delivery search for ${r.name}.") },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showOrderPicker = false
+                            launchUri(
+                                context,
+                                "https://www.doordash.com/search/store/${Uri.encode(r.name + " " + r.area)}",
+                            )
+                        }) { Text("DoorDash") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = {
+                            showOrderPicker = false
+                            launchUri(context, "https://www.ubereats.com/search?q=${Uri.encode(r.name)}")
+                        }) { Text("Uber Eats") }
+                    },
+                )
+            }
 
             // Your tier
             Text("Your tier", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
@@ -232,5 +314,24 @@ fun DetailScreen(
             }
             Spacer(Modifier.height(24.dp))
         }
+    }
+}
+
+/** Open a URL in the browser / handling app, with a graceful Toast if nothing
+ *  can handle it. */
+private fun launchUri(context: Context, uri: String) {
+    try {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No app available to open that", Toast.LENGTH_SHORT).show()
+    }
+}
+
+/** Open the phone dialer pre-filled with a number (ACTION_DIAL needs no permission). */
+private fun launchDial(context: Context, phone: String) {
+    try {
+        context.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
+    } catch (e: ActivityNotFoundException) {
+        Toast.makeText(context, "No dialer available", Toast.LENGTH_SHORT).show()
     }
 }

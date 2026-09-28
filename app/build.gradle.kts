@@ -33,8 +33,8 @@ android {
         applicationId = "com.compofelice.stiereats"
         minSdk = 26
         targetSdk = 36
-        versionCode = 9
-        versionName = "1.2"
+        versionCode = 10
+        versionName = "1.3"
         vectorDrawables { useSupportLibrary = true }
 
         // Maps SDK key → manifest placeholder. Empty if unset (map tiles just
@@ -120,6 +120,7 @@ dependencies {
     implementation(libs.maps.compose)
     implementation(libs.maps.compose.utils)
     implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
     implementation(libs.coil.compose)
     implementation(libs.play.services.ads)
     implementation(libs.kotlinx.coroutines.play.services)

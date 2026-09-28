@@ -30,6 +30,8 @@ import com.compofelice.stiereats.ui.screens.DetailScreen
 import com.compofelice.stiereats.ui.screens.MapScreen
 import com.compofelice.stiereats.ui.screens.MyStatsScreen
 import com.compofelice.stiereats.ui.screens.MyTiersScreen
+import com.compofelice.stiereats.ui.screens.NearMeScreen
+import com.compofelice.stiereats.ui.screens.NightOutScreen
 import com.compofelice.stiereats.ui.screens.ProfileScreen
 import com.compofelice.stiereats.ui.screens.SuggestScreen
 import com.compofelice.stiereats.ui.screens.TierGuideScreen
@@ -81,7 +83,14 @@ fun AppNav(vm: AppViewModel) {
         ) {
             val open: (String) -> Unit = { id -> nav.navigate("detail/$id") }
             composable("map") { MapScreen(vm, open) }
-            composable("browse") { BrowseScreen(vm, open, onSuggest = { nav.navigate("suggest") }) }
+            composable("browse") {
+                BrowseScreen(
+                    vm, open,
+                    onSuggest = { nav.navigate("suggest") },
+                    onNightOut = { nav.navigate("nightout") },
+                    onNearMe = { nav.navigate("nearme") },
+                )
+            }
             composable("mytiers") { MyTiersScreen(vm, open) }
             composable("community") { CommunityScreen(vm, open) }
             composable("profile") {
@@ -98,6 +107,8 @@ fun AppNav(vm: AppViewModel) {
             composable("admin") { AdminScreen(vm, onBack = { nav.popBackStack() }) }
             composable("stats") { MyStatsScreen(vm, onBack = { nav.popBackStack() }) }
             composable("suggest") { SuggestScreen(vm, onBack = { nav.popBackStack() }) }
+            composable("nearme") { NearMeScreen(vm, open, onBack = { nav.popBackStack() }) }
+            composable("nightout") { NightOutScreen(vm, open, onBack = { nav.popBackStack() }) }
             composable("tierguide") { TierGuideScreen(onBack = { nav.popBackStack() }) }
             composable("about") { AboutScreen(onBack = { nav.popBackStack() }) }
             composable("onboarding") { OnboardingScreen(onDone = { nav.popBackStack() }) }

@@ -12,9 +12,11 @@ import com.compofelice.stiereats.data.CatalogRepository
 import com.compofelice.stiereats.data.CommunityTier
 import com.compofelice.stiereats.data.DietaryTag
 import com.compofelice.stiereats.data.FirestoreRepository
+import com.compofelice.stiereats.data.GeoPoint
 import com.compofelice.stiereats.data.ProStatus
 import com.compofelice.stiereats.data.Restaurant
 import com.compofelice.stiereats.data.Tier
+import com.compofelice.stiereats.location.LocationProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -33,11 +35,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val auth = AuthManager()
     private val repo = FirestoreRepository()
     private val catalog = CatalogRepository(app)
+    private val locationProvider = LocationProvider(app)
 
     var restaurants by mutableStateOf<List<Restaurant>>(emptyList()); private set
     var restaurantsById by mutableStateOf<Map<String, Restaurant>>(emptyMap()); private set
     var myPlacements by mutableStateOf<Map<String, Tier>>(emptyMap()); private set
     var visited by mutableStateOf<Set<String>>(emptySet()); private set
+
+    /** Last known device location, or null until permission is granted + a fix
+     *  is obtained. Drives Near Me and Plan a Night Out "near me" mode. */
+    var userLocation by mutableStateOf<GeoPoint?>(null); private set
 
     var isSignedIn by mutableStateOf(auth.isSignedIn); private set
     var displayName by mutableStateOf(auth.displayName); private set
@@ -99,6 +106,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /** The signed-in user's Firebase UID (their account id), or null. */
     fun accountId(): String? = repo.currentUid()
+
+    /** Fetch the current device location. Caller MUST have confirmed the
+     *  COARSE_LOCATION runtime permission first; on any failure leaves
+     *  [userLocation] unchanged (screens fall back to "search by area"). */
+    suspend fun refreshLocation() {
+        locationProvider.current()?.let { userLocation = it }
+    }
 
     /** Submit a "missing restaurant" suggestion for admin review. */
     suspend fun submitSuggestion(
