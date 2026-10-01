@@ -151,13 +151,21 @@ fun DetailScreen(
                     label = { Text("Order") },
                     leadingIcon = { Icon(Icons.Filled.ShoppingBag, null, Modifier.size(18.dp)) },
                 )
-                AssistChip(
-                    onClick = {
-                        launchUri(context, "https://www.opentable.com/s?term=${Uri.encode(r.name)}")
-                    },
-                    label = { Text("Reserve") },
-                    leadingIcon = { Icon(Icons.Filled.EventSeat, null, Modifier.size(18.dp)) },
-                )
+                // Reserve only shows where the spot actually takes reservations
+                // (curated takesReservations flag). The OpenTable search term
+                // carries the city so it resolves to the right venue; no
+                // affiliate tag yet (plain link, affiliate-ready later).
+                if (r.reservable) {
+                    val city = r.address.substringBefore(", TX").substringAfterLast(", ")
+                        .ifBlank { r.area }
+                    AssistChip(
+                        onClick = {
+                            launchUri(context, "https://www.opentable.com/s?term=${Uri.encode("${r.name} $city TX")}")
+                        },
+                        label = { Text("Reserve") },
+                        leadingIcon = { Icon(Icons.Filled.EventSeat, null, Modifier.size(18.dp)) },
+                    )
+                }
             }
             Spacer(Modifier.height(20.dp))
 

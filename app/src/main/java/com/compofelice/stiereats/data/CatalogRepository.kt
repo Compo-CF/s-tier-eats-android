@@ -45,6 +45,7 @@ class CatalogRepository(private val context: Context) {
             signatureDishes = dishes,
             website = strOrNull("website"),
             phone = strOrNull("phone"),
+            reservable = o.optBoolean("reservable", false),
         )
     }
 }

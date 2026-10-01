@@ -78,4 +78,9 @@ data class Restaurant(
     val signatureDishes: List<String> = emptyList(),
     val website: String? = null,
     val phone: String? = null,
+    /** Curated/Google-Places `reservable`: true for the handful of spots that
+     *  take OpenTable reservations, so the Reserve action only shows where it
+     *  resolves to a booking page (most local spots are walk-in). Same JSON key
+     *  and semantics as iOS `Restaurant.reservable`. */
+    val reservable: Boolean = false,
 )
