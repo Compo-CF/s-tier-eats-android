@@ -33,7 +33,7 @@ android {
         applicationId = "com.compofelice.stiereats"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
+        versionCode = 12
         versionName = "1.4"
         vectorDrawables { useSupportLibrary = true }
 

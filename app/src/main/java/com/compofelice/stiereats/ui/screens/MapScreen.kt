@@ -14,13 +14,28 @@ import com.compofelice.stiereats.ui.AppViewModel
 import com.compofelice.stiereats.ui.BannerAd
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.clustering.ClusterItem
 import com.google.maps.android.clustering.algo.NonHierarchicalViewBasedAlgorithm
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapsComposeExperimentalApi
 import com.google.maps.android.compose.clustering.Clustering
 import com.google.maps.android.compose.clustering.rememberClusterManager
 import com.google.maps.android.compose.rememberCameraPositionState
+
+/** v1.4: muted Google Maps style — hides POI + transit clutter and softens
+ *  landscape/water so the tier-colored restaurant pins stand out (matches the
+ *  iOS muted map). Keeps road + place labels for navigation context. */
+private const val MAP_STYLE_JSON = """
+[
+  {"featureType":"poi","stylers":[{"visibility":"off"}]},
+  {"featureType":"transit","stylers":[{"visibility":"off"}]},
+  {"featureType":"road","elementType":"labels.icon","stylers":[{"visibility":"off"}]},
+  {"featureType":"landscape","stylers":[{"saturation":-35},{"lightness":5}]},
+  {"featureType":"water","stylers":[{"saturation":-25}]}
+]
+"""
 
 /** Wraps a Restaurant as a map ClusterItem. */
 private class RestaurantClusterItem(val r: Restaurant) : ClusterItem {
@@ -50,6 +65,9 @@ fun MapScreen(
         GoogleMap(
             modifier = Modifier.weight(1f).fillMaxWidth(),
             cameraPositionState = cameraPositionState,
+            // v1.4: a muted map style (POIs hidden, landscape/water desaturated)
+            // so the tier pins carry the color — parity with the iOS muted map.
+            properties = remember { MapProperties(mapStyleOptions = MapStyleOptions(MAP_STYLE_JSON)) },
         ) {
             val clusterManager = rememberClusterManager<RestaurantClusterItem>()
             if (clusterManager != null) {
