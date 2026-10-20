@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import android.content.Intent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddLocationAlt
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
@@ -55,12 +58,13 @@ fun ProfileScreen(
     onOpenTierGuide: () -> Unit,
     onOpenAbout: () -> Unit,
     onReplayIntro: () -> Unit,
+    onOpenFriends: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (vm.isSignedIn) {
         SignedInProfile(
             vm, onOpenAdmin, onOpenStats, onOpenSuggest,
-            onOpenTierGuide, onOpenAbout, onReplayIntro, modifier,
+            onOpenTierGuide, onOpenAbout, onReplayIntro, onOpenFriends, modifier,
         )
     } else {
         SignedOutProfile(vm, onOpenTierGuide, onOpenAbout, onReplayIntro, modifier)
@@ -143,8 +147,10 @@ private fun SignedInProfile(
     onOpenTierGuide: () -> Unit,
     onOpenAbout: () -> Unit,
     onReplayIntro: () -> Unit,
+    onOpenFriends: () -> Unit,
     modifier: Modifier,
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf(vm.displayName ?: "") }
     var savedName by remember { mutableStateOf(vm.displayName ?: "") }
@@ -243,6 +249,20 @@ private fun SignedInProfile(
 
         // ── Menu (parity with the iOS Profile) ───────────────────
         Spacer(Modifier.height(20.dp))
+        MenuRow("Friends & Taste Match", Icons.Filled.Group, onOpenFriends)
+        vm.accountId()?.let { id ->
+            MenuRow("Share my tier list", Icons.Filled.Share) {
+                val link = "https://compo-cf.github.io/woodlands-eats/tier/$id"
+                val send = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(
+                        Intent.EXTRA_TEXT,
+                        "Check out my S-Tier Eats tier list — follow me and see how our tastes match: $link",
+                    )
+                }
+                context.startActivity(Intent.createChooser(send, "Share"))
+            }
+        }
         MenuRow("My Stats", Icons.Filled.BarChart, onOpenStats)
         MenuRow("Suggest a missing restaurant", Icons.Filled.AddLocationAlt, onOpenSuggest)
         MenuRow("Tier guide", Icons.Filled.HelpOutline, onOpenTierGuide)

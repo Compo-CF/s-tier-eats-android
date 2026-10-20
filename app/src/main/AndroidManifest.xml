@@ -28,6 +28,26 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Friend tier share links. Custom scheme works app-to-app always;
+                 the https App Link needs assetlinks.json on the host to auto-open
+                 the app (otherwise it lands in the browser on the 404 page, which
+                 funnels to the store). MainActivity.handleDeepLink parses both. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="stier" android:host="tier" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="compo-cf.github.io"
+                    android:pathPrefix="/woodlands-eats/tier" />
+            </intent-filter>
         </activity>
 
         <!-- Google Maps SDK key, injected via manifestPlaceholder (CI secret). -->

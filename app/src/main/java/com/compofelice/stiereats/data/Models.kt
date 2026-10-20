@@ -37,6 +37,31 @@ enum class Tier(val rawValue: String, val score: Int) {
 /** The current user's Foodie Pro standing. */
 enum class ProStatus { NONE, REQUESTED, APPROVED }
 
+/**
+ * One followed account. [uid] is the followee's Firebase UID; [displayName] a
+ * cached snapshot for offline list rendering. Encoded "uid|displayName" inside
+ * the `friendLists/{uid}.entries` array — the SAME wire format iOS uses (its
+ * Friend `init?(encoded:)`/"userID|displayName"), so the follow graph is
+ * cross-compatible with the shared Firestore schema.
+ */
+data class Friend(val uid: String, val displayName: String) {
+    /** Re-encode to the "uid|displayName" entry stored in Firestore. */
+    fun encode(): String = "$uid|$displayName"
+
+    companion object {
+        /** Decode a "uid|displayName" entry. Split on the FIRST '|' only (a
+         *  display name may itself contain '|'). Returns null for a malformed
+         *  entry or an empty uid. */
+        fun decode(encoded: String): Friend? {
+            val sep = encoded.indexOf('|')
+            if (sep <= 0) return null
+            val uid = encoded.substring(0, sep)
+            if (uid.isBlank()) return null
+            return Friend(uid, encoded.substring(sep + 1))
+        }
+    }
+}
+
 /** Community consensus for one restaurant. */
 data class CommunityTier(
     val tier: Tier,

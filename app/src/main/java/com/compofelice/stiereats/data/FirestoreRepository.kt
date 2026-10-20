@@ -143,6 +143,76 @@ class FirestoreRepository(
         } catch (_: Exception) { emptyMap() }
     }
 
+    // ── Friends / follow graph (mirrors iOS friendLists schema) ──
+    // friendLists/{uid} = { userID, entries: ["uid|displayName", …], count, updatedAt }.
+    // Per-platform identity (Android uids are distinct from iOS iCloud ids), so
+    // this is the Android-internal follow graph over the shared placements data.
+
+    /** The current user's follow list. */
+    suspend fun myFriends(): List<Friend> {
+        val me = uid ?: return emptyList()
+        return try {
+            val doc = db.collection("friendLists").document(me).get().await()
+            (doc.get("entries") as? List<*>)?.filterIsInstance<String>()
+                ?.mapNotNull { Friend.decode(it) } ?: emptyList()
+        } catch (_: Exception) { emptyList() }
+    }
+
+    private suspend fun saveFriends(friends: List<Friend>) {
+        val me = uid ?: return
+        runCatching {
+            db.collection("friendLists").document(me).set(
+                hashMapOf(
+                    "userID" to me,
+                    "entries" to friends.map { it.encode() },
+                    "count" to friends.size,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+                com.google.firebase.firestore.SetOptions.merge(),
+            ).await()
+        }
+    }
+
+    /** Follow [targetUid] (no-op for self or empty; refreshes the cached name if
+     *  already followed). Returns the updated list. */
+    suspend fun follow(targetUid: String, displayName: String): List<Friend> {
+        val me = uid ?: return myFriends()
+        if (targetUid.isBlank() || targetUid == me) return myFriends()
+        val name = displayName.trim().ifBlank { "Foodie" }
+        val current = myFriends().toMutableList()
+        val idx = current.indexOfFirst { it.uid == targetUid }
+        if (idx >= 0) current[idx] = Friend(targetUid, name) else current.add(Friend(targetUid, name))
+        saveFriends(current)
+        return current
+    }
+
+    /** Unfollow [targetUid]. Returns the updated list. */
+    suspend fun unfollow(targetUid: String): List<Friend> {
+        val current = myFriends().filterNot { it.uid == targetUid }
+        saveFriends(current)
+        return current
+    }
+
+    /** A specific user's placements (restaurantId -> Tier) — for a friend's
+     *  tier list, Taste Match, and the leaderboard. */
+    suspend fun placements(forUid: String): Map<String, Tier> {
+        if (forUid.isBlank()) return emptyMap()
+        return try {
+            val snap = db.collection("placements").whereEqualTo("userID", forUid).get().await()
+            snap.documents.mapNotNull { doc ->
+                val rid = doc.getString("restaurantID") ?: return@mapNotNull null
+                val tier = Tier.fromRaw(doc.getString("tier")) ?: return@mapNotNull null
+                rid to tier
+            }.toMap()
+        } catch (_: Exception) { emptyMap() }
+    }
+
+    /** A user's display name from their profile, or null. */
+    suspend fun profileName(forUid: String): String? = try {
+        db.collection("profiles").document(forUid).get().await()
+            .getString("displayName")?.ifBlank { null }
+    } catch (_: Exception) { null }
+
     suspend fun visitedList(): Set<String> {
         val me = uid ?: return emptySet()
         return try {

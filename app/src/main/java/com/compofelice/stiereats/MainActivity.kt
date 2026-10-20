@@ -1,6 +1,7 @@
 package com.compofelice.stiereats
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,9 +27,35 @@ import com.compofelice.stiereats.ui.theme.STierEatsTheme
 import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
+    /** Pending friend uid parsed from a `tier/<uid>` deep link (custom scheme
+     *  `stier://tier/<uid>` or the https share link). Observed in composition;
+     *  AppNav navigates to that friend and clears it. */
+    private val deepLinkUid = mutableStateOf<String?>(null)
+
+    private fun handleDeepLink(intent: Intent?) {
+        val data = intent?.data ?: return
+        val segs = data.pathSegments ?: return
+        val uid = when {
+            data.scheme == "stier" && data.host == "tier" -> segs.firstOrNull()
+            data.scheme == "https" || data.scheme == "http" -> {
+                val i = segs.indexOf("tier")
+                if (i >= 0 && i + 1 < segs.size) segs[i + 1] else null
+            }
+            else -> null
+        }
+        if (!uid.isNullOrBlank()) deepLinkUid.value = uid
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleDeepLink(intent)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        handleDeepLink(intent)
         setContent {
             STierEatsTheme {
                 // v1.4: hold the animated splash for a short beat, then fade it
@@ -53,7 +80,11 @@ class MainActivity : ComponentActivity() {
                     } else {
                         val vm: AppViewModel = viewModel()
                         LaunchedEffect(Unit) { vm.bootstrap() }
-                        AppNav(vm)
+                        AppNav(
+                            vm,
+                            deepLinkFriendUid = deepLinkUid.value,
+                            onConsumeDeepLink = { deepLinkUid.value = null },
+                        )
                     }
                     AnimatedVisibility(
                         visible = showSplash,

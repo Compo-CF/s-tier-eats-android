@@ -12,6 +12,7 @@ import com.compofelice.stiereats.data.CatalogRepository
 import com.compofelice.stiereats.data.CommunityTier
 import com.compofelice.stiereats.data.DietaryTag
 import com.compofelice.stiereats.data.FirestoreRepository
+import com.compofelice.stiereats.data.Friend
 import com.compofelice.stiereats.data.GeoPoint
 import com.compofelice.stiereats.data.ProStatus
 import com.compofelice.stiereats.data.Restaurant
@@ -41,6 +42,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var restaurantsById by mutableStateOf<Map<String, Restaurant>>(emptyMap()); private set
     var myPlacements by mutableStateOf<Map<String, Tier>>(emptyMap()); private set
     var visited by mutableStateOf<Set<String>>(emptySet()); private set
+
+    /** People the signed-in user follows (the Android-internal follow graph). */
+    var friends by mutableStateOf<List<Friend>>(emptyList()); private set
+    val friendIds: Set<String> get() = friends.map { it.uid }.toSet()
+    fun isFollowing(uid: String): Boolean = friends.any { it.uid == uid }
 
     /** Last known device location, or null until permission is granted + a fix
      *  is obtained. Drives Near Me and Plan a Night Out "near me" mode. */
@@ -72,6 +78,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             myPlacements = repo.myPlacements()
             visited = repo.visitedList()
+            friends = repo.myFriends()
             proStatus = repo.myProStatus()
             isAdmin = repo.isAdmin()
         }
@@ -95,6 +102,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         displayName = null
         myPlacements = emptyMap()
         visited = emptySet()
+        friends = emptyList()
         proStatus = ProStatus.NONE
         isAdmin = false
     }
@@ -106,6 +114,22 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /** The signed-in user's Firebase UID (their account id), or null. */
     fun accountId(): String? = repo.currentUid()
+
+    // ── Friends / follow graph ───────────────────────────────────
+    fun follow(targetUid: String, displayName: String) {
+        viewModelScope.launch { friends = repo.follow(targetUid, displayName) }
+    }
+
+    fun unfollow(targetUid: String) {
+        viewModelScope.launch { friends = repo.unfollow(targetUid) }
+    }
+
+    /** A specific user's placements — for a friend's tier list, Taste Match and
+     *  the leaderboard. */
+    suspend fun placementsOf(uid: String): Map<String, Tier> = repo.placements(uid)
+
+    /** A user's display name (from their profile), or null. */
+    suspend fun profileName(uid: String): String? = repo.profileName(uid)
 
     /** Fetch the current device location. Caller MUST have confirmed the
      *  COARSE_LOCATION runtime permission first; on any failure leaves
@@ -173,7 +197,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     suspend fun communityBoard(source: BoardSource): Map<String, CommunityTier> = when (source) {
         BoardSource.EVERYONE -> repo.allCommunityTiers()
         BoardSource.PROS -> repo.proCommunityTiers()
-        BoardSource.FRIENDS -> repo.friendsCommunityTiers(emptySet()) // friends UI TODO
+        BoardSource.FRIENDS -> repo.friendsCommunityTiers(friendIds)
     }
 
     suspend fun communityTier(restaurantId: String): CommunityTier? =

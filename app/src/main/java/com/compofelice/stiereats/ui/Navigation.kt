@@ -13,6 +13,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -27,6 +28,8 @@ import com.compofelice.stiereats.ui.screens.AdminScreen
 import com.compofelice.stiereats.ui.screens.BrowseScreen
 import com.compofelice.stiereats.ui.screens.CommunityScreen
 import com.compofelice.stiereats.ui.screens.DetailScreen
+import com.compofelice.stiereats.ui.screens.FriendTierScreen
+import com.compofelice.stiereats.ui.screens.FriendsScreen
 import com.compofelice.stiereats.ui.screens.MapScreen
 import com.compofelice.stiereats.ui.screens.MyStatsScreen
 import com.compofelice.stiereats.ui.screens.MyTiersScreen
@@ -34,6 +37,8 @@ import com.compofelice.stiereats.ui.screens.NearMeScreen
 import com.compofelice.stiereats.ui.screens.NightOutScreen
 import com.compofelice.stiereats.ui.screens.ProfileScreen
 import com.compofelice.stiereats.ui.screens.SuggestScreen
+import com.compofelice.stiereats.ui.screens.TasteMatchLeaderboardScreen
+import com.compofelice.stiereats.ui.screens.TasteMatchScreen
 import com.compofelice.stiereats.ui.screens.TierGuideScreen
 
 private data class Tab(val route: String, val label: String, val icon: ImageVector)
@@ -47,8 +52,21 @@ private val tabs = listOf(
 )
 
 @Composable
-fun AppNav(vm: AppViewModel) {
+fun AppNav(
+    vm: AppViewModel,
+    deepLinkFriendUid: String? = null,
+    onConsumeDeepLink: () -> Unit = {},
+) {
     val nav = rememberNavController()
+    // A `tier/<uid>` deep link (shared friend link) navigates to that friend's
+    // tier screen once the nav host is ready, then clears the pending link.
+    LaunchedEffect(deepLinkFriendUid) {
+        val uid = deepLinkFriendUid
+        if (!uid.isNullOrBlank()) {
+            nav.navigate("friend/$uid")
+            onConsumeDeepLink()
+        }
+    }
     val backStack by nav.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val showBottomBar = currentRoute in tabs.map { it.route }
@@ -102,6 +120,7 @@ fun AppNav(vm: AppViewModel) {
                     onOpenTierGuide = { nav.navigate("tierguide") },
                     onOpenAbout = { nav.navigate("about") },
                     onReplayIntro = { nav.navigate("onboarding") },
+                    onOpenFriends = { nav.navigate("friends") },
                 )
             }
             composable("admin") { AdminScreen(vm, onBack = { nav.popBackStack() }) }
@@ -116,6 +135,38 @@ fun AppNav(vm: AppViewModel) {
                 DetailScreen(
                     restaurantId = entry.arguments?.getString("id") ?: "",
                     vm = vm,
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable("friends") {
+                FriendsScreen(
+                    vm,
+                    onOpenFriend = { uid -> nav.navigate("friend/$uid") },
+                    onOpenLeaderboard = { nav.navigate("leaderboard") },
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable("leaderboard") {
+                TasteMatchLeaderboardScreen(
+                    vm,
+                    onCompare = { uid -> nav.navigate("tastematch/$uid") },
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable("friend/{uid}") { entry ->
+                FriendTierScreen(
+                    friendUid = entry.arguments?.getString("uid") ?: "",
+                    vm = vm,
+                    onOpen = open,
+                    onCompare = { uid -> nav.navigate("tastematch/$uid") },
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable("tastematch/{uid}") { entry ->
+                TasteMatchScreen(
+                    friendUid = entry.arguments?.getString("uid") ?: "",
+                    vm = vm,
+                    onOpen = open,
                     onBack = { nav.popBackStack() },
                 )
             }
