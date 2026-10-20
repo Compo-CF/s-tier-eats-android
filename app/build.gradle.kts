@@ -33,8 +33,8 @@ android {
         applicationId = "com.compofelice.stiereats"
         minSdk = 26
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.4"
+        versionCode = 13
+        versionName = "1.5"
         vectorDrawables { useSupportLibrary = true }
 
         // Maps SDK key → manifest placeholder. Empty if unset (map tiles just
