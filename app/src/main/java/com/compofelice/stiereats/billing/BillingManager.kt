@@ -83,9 +83,11 @@ class BillingManager(context: Context) {
                 )
             )
             .build()
-        client.queryProductDetailsAsync(params) { result, list ->
+        client.queryProductDetailsAsync(params) { result, queryResult ->
+            // Billing 8.0: the callback hands back a QueryProductDetailsResult
+            // (was a List<ProductDetails> in 7.x).
             if (result.responseCode == BillingClient.BillingResponseCode.OK) {
-                productDetails = list.firstOrNull()
+                productDetails = queryResult.productDetailsList.firstOrNull()
                 priceText = productDetails
                     ?.subscriptionOfferDetails?.firstOrNull()
                     ?.pricingPhases?.pricingPhaseList?.firstOrNull()

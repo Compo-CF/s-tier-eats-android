@@ -16,7 +16,7 @@ playServicesLocation = "21.3.0"
 coil = "2.7.0"
 kotlinxCoroutines = "1.9.0"
 playServicesAds = "23.6.0"
-billing = "7.1.1"
+billing = "8.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
