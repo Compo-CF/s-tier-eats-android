@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.compofelice.stiereats.ui.AppViewModel
+import com.compofelice.stiereats.ui.RestaurantListSkeleton
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -106,9 +107,7 @@ fun TasteMatchLeaderboardScreen(
         },
     ) { padding ->
         when {
-            loading -> Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+            loading -> RestaurantListSkeleton(rows = 6, modifier = Modifier.padding(padding))
             friends.isEmpty() -> Box(Modifier.fillMaxSize().padding(padding).padding(24.dp), contentAlignment = Alignment.Center) {
                 Text(
                     "Follow people to see who shares your taste. Open a friend's shared tier link and tap Follow.",

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.compofelice.stiereats.data.CommunityTier
 import com.compofelice.stiereats.ui.AppViewModel
 import com.compofelice.stiereats.ui.BoardSource
+import com.compofelice.stiereats.ui.RestaurantListSkeleton
 import com.compofelice.stiereats.ui.TierBadge
 
 @Composable
@@ -68,7 +69,7 @@ fun CommunityScreen(
             }
         }
         when {
-            loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+            loading -> RestaurantListSkeleton()
             ranked.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     if (source == BoardSource.FRIENDS) "Follow people to see their board."
