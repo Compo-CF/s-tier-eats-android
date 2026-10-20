@@ -213,6 +213,82 @@ class FirestoreRepository(
             .getString("displayName")?.ifBlank { null }
     } catch (_: Exception) { null }
 
+    // ── Lists (v3.0 shareable collections; lists/{id}) ───────────
+    // { ownerId, title, emoji, restaurantIDs: [uuidString], isPublic,
+    //   createdAt, updatedAt } — same shape iOS writes.
+
+    suspend fun createList(title: String, emoji: String, isPublic: Boolean): String? {
+        val me = uid ?: return null
+        val ref = db.collection("lists").document()
+        return runCatching {
+            ref.set(
+                hashMapOf(
+                    "ownerId" to me,
+                    "title" to title,
+                    "emoji" to emoji,
+                    "restaurantIDs" to emptyList<String>(),
+                    "isPublic" to isPublic,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                )
+            ).await()
+            ref.id
+        }.getOrNull()
+    }
+
+    /** Patch any subset of a list's fields (only non-null args are written). */
+    suspend fun updateList(
+        id: String,
+        title: String? = null,
+        emoji: String? = null,
+        restaurantIDs: List<String>? = null,
+        isPublic: Boolean? = null,
+    ) {
+        val data = hashMapOf<String, Any>("updatedAt" to FieldValue.serverTimestamp())
+        title?.let { data["title"] = it }
+        emoji?.let { data["emoji"] = it }
+        restaurantIDs?.let { data["restaurantIDs"] = it }
+        isPublic?.let { data["isPublic"] = it }
+        runCatching {
+            db.collection("lists").document(id)
+                .set(data, com.google.firebase.firestore.SetOptions.merge()).await()
+        }
+    }
+
+    suspend fun deleteList(id: String) {
+        runCatching { db.collection("lists").document(id).delete().await() }
+    }
+
+    /** The signed-in user's own lists, newest-updated first. */
+    suspend fun fetchMyLists(): List<RestaurantList> {
+        val me = uid ?: return emptyList()
+        return try {
+            val snap = db.collection("lists").whereEqualTo("ownerId", me).get().await()
+            snap.documents.mapNotNull { parseList(it) }.sortedByDescending { it.updatedAtMillis }
+        } catch (_: Exception) { emptyList() }
+    }
+
+    /** Fetch one list by id (for a shared deep link). */
+    suspend fun fetchList(id: String): RestaurantList? = try {
+        parseList(db.collection("lists").document(id).get().await())
+    } catch (_: Exception) { null }
+
+    private fun parseList(doc: com.google.firebase.firestore.DocumentSnapshot): RestaurantList? {
+        val owner = doc.getString("ownerId") ?: return null
+        val title = doc.getString("title") ?: return null
+        val ids = (doc.get("restaurantIDs") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
+        val updated = doc.getTimestamp("updatedAt")?.toDate()?.time ?: 0L
+        return RestaurantList(
+            id = doc.id,
+            ownerId = owner,
+            title = title,
+            emoji = doc.getString("emoji") ?: "",
+            restaurantIDs = ids,
+            isPublic = doc.getBoolean("isPublic") ?: false,
+            updatedAtMillis = updated,
+        )
+    }
+
     suspend fun visitedList(): Set<String> {
         val me = uid ?: return emptySet()
         return try {

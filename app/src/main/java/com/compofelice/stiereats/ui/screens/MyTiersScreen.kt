@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -40,6 +41,7 @@ import com.compofelice.stiereats.ui.share.TierShareCard
 fun MyTiersScreen(
     vm: AppViewModel,
     onOpen: (String) -> Unit,
+    onOpenLists: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     if (!vm.isSignedIn) {
@@ -68,8 +70,13 @@ fun MyTiersScreen(
     Column(modifier.fillMaxSize()) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.End,
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
+            TextButton(onClick = onOpenLists) {
+                Icon(Icons.AutoMirrored.Filled.List, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("My Lists")
+            }
             TextButton(onClick = { showShare = true }) {
                 Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))

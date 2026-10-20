@@ -48,6 +48,23 @@
                     android:host="compo-cf.github.io"
                     android:pathPrefix="/woodlands-eats/tier" />
             </intent-filter>
+
+            <!-- Shared Lists: stier://list/<id> + https list path. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="stier" android:host="list" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="compo-cf.github.io"
+                    android:pathPrefix="/woodlands-eats/list" />
+            </intent-filter>
         </activity>
 
         <!-- Google Maps SDK key, injected via manifestPlaceholder (CI secret). -->

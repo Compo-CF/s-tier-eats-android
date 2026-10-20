@@ -30,6 +30,8 @@ import com.compofelice.stiereats.ui.screens.CommunityScreen
 import com.compofelice.stiereats.ui.screens.DetailScreen
 import com.compofelice.stiereats.ui.screens.FriendTierScreen
 import com.compofelice.stiereats.ui.screens.FriendsScreen
+import com.compofelice.stiereats.ui.screens.ListDetailScreen
+import com.compofelice.stiereats.ui.screens.ListsScreen
 import com.compofelice.stiereats.ui.screens.MapScreen
 import com.compofelice.stiereats.ui.screens.MyStatsScreen
 import com.compofelice.stiereats.ui.screens.MyTiersScreen
@@ -55,6 +57,7 @@ private val tabs = listOf(
 fun AppNav(
     vm: AppViewModel,
     deepLinkFriendUid: String? = null,
+    deepLinkListId: String? = null,
     onConsumeDeepLink: () -> Unit = {},
 ) {
     val nav = rememberNavController()
@@ -64,6 +67,14 @@ fun AppNav(
         val uid = deepLinkFriendUid
         if (!uid.isNullOrBlank()) {
             nav.navigate("friend/$uid")
+            onConsumeDeepLink()
+        }
+    }
+    // A `list/<id>` deep link opens the shared list read-only.
+    LaunchedEffect(deepLinkListId) {
+        val id = deepLinkListId
+        if (!id.isNullOrBlank()) {
+            nav.navigate("sharedlist/$id")
             onConsumeDeepLink()
         }
     }
@@ -109,7 +120,7 @@ fun AppNav(
                     onNearMe = { nav.navigate("nearme") },
                 )
             }
-            composable("mytiers") { MyTiersScreen(vm, open) }
+            composable("mytiers") { MyTiersScreen(vm, open, onOpenLists = { nav.navigate("lists") }) }
             composable("community") { CommunityScreen(vm, open) }
             composable("profile") {
                 ProfileScreen(
@@ -168,6 +179,30 @@ fun AppNav(
                     vm = vm,
                     onOpen = open,
                     onBack = { nav.popBackStack() },
+                )
+            }
+            composable("lists") {
+                ListsScreen(
+                    vm,
+                    onOpenList = { id -> nav.navigate("list/$id") },
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable("list/{id}") { entry ->
+                ListDetailScreen(
+                    listId = entry.arguments?.getString("id") ?: "",
+                    vm = vm,
+                    onOpen = open,
+                    onBack = { nav.popBackStack() },
+                )
+            }
+            composable("sharedlist/{id}") { entry ->
+                ListDetailScreen(
+                    listId = entry.arguments?.getString("id") ?: "",
+                    vm = vm,
+                    onOpen = open,
+                    onBack = { nav.popBackStack() },
+                    readOnly = true,
                 )
             }
         }

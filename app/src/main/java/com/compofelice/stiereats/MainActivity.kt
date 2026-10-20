@@ -31,19 +31,23 @@ class MainActivity : ComponentActivity() {
      *  `stier://tier/<uid>` or the https share link). Observed in composition;
      *  AppNav navigates to that friend and clears it. */
     private val deepLinkUid = mutableStateOf<String?>(null)
+    private val deepLinkListId = mutableStateOf<String?>(null)
 
     private fun handleDeepLink(intent: Intent?) {
         val data = intent?.data ?: return
         val segs = data.pathSegments ?: return
-        val uid = when {
-            data.scheme == "stier" && data.host == "tier" -> segs.firstOrNull()
-            data.scheme == "https" || data.scheme == "http" -> {
-                val i = segs.indexOf("tier")
-                if (i >= 0 && i + 1 < segs.size) segs[i + 1] else null
-            }
-            else -> null
+        fun after(key: String): String? {
+            val i = segs.indexOf(key)
+            return if (i >= 0 && i + 1 < segs.size) segs[i + 1] else null
         }
-        if (!uid.isNullOrBlank()) deepLinkUid.value = uid
+        when {
+            data.scheme == "stier" && data.host == "tier" -> segs.firstOrNull()?.let { if (it.isNotBlank()) deepLinkUid.value = it }
+            data.scheme == "stier" && data.host == "list" -> segs.firstOrNull()?.let { if (it.isNotBlank()) deepLinkListId.value = it }
+            data.scheme == "https" || data.scheme == "http" -> {
+                after("tier")?.let { if (it.isNotBlank()) deepLinkUid.value = it }
+                after("list")?.let { if (it.isNotBlank()) deepLinkListId.value = it }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -83,7 +87,8 @@ class MainActivity : ComponentActivity() {
                         AppNav(
                             vm,
                             deepLinkFriendUid = deepLinkUid.value,
-                            onConsumeDeepLink = { deepLinkUid.value = null },
+                            deepLinkListId = deepLinkListId.value,
+                            onConsumeDeepLink = { deepLinkUid.value = null; deepLinkListId.value = null },
                         )
                     }
                     AnimatedVisibility(

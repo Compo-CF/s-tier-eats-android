@@ -38,6 +38,22 @@ enum class Tier(val rawValue: String, val score: Int) {
 enum class ProStatus { NONE, REQUESTED, APPROVED }
 
 /**
+ * A shareable restaurant collection ("Top 10 Tacos", etc.). Mirrors the iOS
+ * `RestaurantList` + the shared `lists/{id}` Firestore doc
+ * ({ ownerId, title, emoji, restaurantIDs: [uuidString], isPublic, createdAt,
+ * updatedAt }). restaurantIDs are UUID strings in display order.
+ */
+data class RestaurantList(
+    val id: String,
+    val ownerId: String,
+    val title: String,
+    val emoji: String,
+    val restaurantIDs: List<String>,
+    val isPublic: Boolean,
+    val updatedAtMillis: Long,
+)
+
+/**
  * One followed account. [uid] is the followee's Firebase UID; [displayName] a
  * cached snapshot for offline list rendering. Encoded "uid|displayName" inside
  * the `friendLists/{uid}.entries` array — the SAME wire format iOS uses (its

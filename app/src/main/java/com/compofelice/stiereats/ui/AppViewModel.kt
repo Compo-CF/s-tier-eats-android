@@ -16,6 +16,7 @@ import com.compofelice.stiereats.data.Friend
 import com.compofelice.stiereats.data.GeoPoint
 import com.compofelice.stiereats.data.ProStatus
 import com.compofelice.stiereats.data.Restaurant
+import com.compofelice.stiereats.data.RestaurantList
 import com.compofelice.stiereats.data.Tier
 import com.compofelice.stiereats.location.LocationProvider
 import kotlinx.coroutines.Dispatchers
@@ -130,6 +131,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     /** A user's display name (from their profile), or null. */
     suspend fun profileName(uid: String): String? = repo.profileName(uid)
+
+    // ── Lists (shareable collections) ────────────────────────────
+    suspend fun myLists(): List<RestaurantList> = repo.fetchMyLists()
+    suspend fun fetchList(id: String): RestaurantList? = repo.fetchList(id)
+    suspend fun createList(title: String, emoji: String = "", isPublic: Boolean = true): String? =
+        repo.createList(title, emoji, isPublic)
+    suspend fun updateList(
+        id: String,
+        title: String? = null,
+        emoji: String? = null,
+        restaurantIDs: List<String>? = null,
+        isPublic: Boolean? = null,
+    ) = repo.updateList(id, title, emoji, restaurantIDs, isPublic)
+    suspend fun deleteList(id: String) = repo.deleteList(id)
 
     /** Fetch the current device location. Caller MUST have confirmed the
      *  COARSE_LOCATION runtime permission first; on any failure leaves
