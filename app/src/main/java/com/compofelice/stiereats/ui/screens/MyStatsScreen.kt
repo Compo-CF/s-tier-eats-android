@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,6 +26,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +39,8 @@ import com.compofelice.stiereats.data.FoodieRank
 import com.compofelice.stiereats.data.Tier
 import com.compofelice.stiereats.ui.AppViewModel
 import com.compofelice.stiereats.ui.TierBadge
+import com.compofelice.stiereats.ui.share.ShareCardSheet
+import com.compofelice.stiereats.ui.share.StatsShareCard
 import com.compofelice.stiereats.ui.tierColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,6 +52,13 @@ fun MyStatsScreen(vm: AppViewModel, onBack: () -> Unit) {
     // Count per tier for the breakdown bar.
     val perTier = Tier.entries.associateWith { t -> vm.myPlacements.values.count { it == t } }
     val maxCount = (perTier.values.maxOrNull() ?: 0).coerceAtLeast(1)
+    val sTier = perTier[Tier.S] ?: 0
+    val rankedRestaurants = vm.myPlacements.keys.mapNotNull { vm.restaurantsById[it] }
+    val topCuisine = rankedRestaurants.mapNotNull { it.cuisines.firstOrNull() }
+        .groupingBy { it }.eachCount().maxByOrNull { it.value }?.key?.replaceFirstChar { it.uppercase() }
+    val topArea = rankedRestaurants.map { it.area }.filter { it.isNotBlank() }
+        .groupingBy { it }.eachCount().maxByOrNull { it.value }?.key?.replaceFirstChar { it.uppercase() }
+    var showShare by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -53,6 +67,13 @@ fun MyStatsScreen(vm: AppViewModel, onBack: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                    }
+                },
+                actions = {
+                    if (ranked > 0) {
+                        IconButton(onClick = { showShare = true }) {
+                            Icon(Icons.Filled.Share, contentDescription = "Share stats")
+                        }
                     }
                 },
             )
@@ -117,6 +138,25 @@ fun MyStatsScreen(vm: AppViewModel, onBack: () -> Unit) {
                 }
             }
             Spacer(Modifier.height(24.dp))
+        }
+    }
+
+    if (showShare) {
+        ShareCardSheet(
+            onDismiss = { showShare = false },
+            fileName = "stier-food-stats.png",
+            shareText = "My S-Tier Eats food stats — rank your local restaurants. https://play.google.com/store/apps/details?id=com.compofelice.stiereats",
+        ) {
+            StatsShareCard(
+                displayName = vm.displayName,
+                headline = "My Food Stats",
+                rankName = rank?.displayName ?: "Newcomer",
+                ranked = ranked,
+                visited = visited,
+                sTier = sTier,
+                topCuisine = topCuisine,
+                topArea = topArea,
+            )
         }
     }
 }
