@@ -5,16 +5,26 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +33,8 @@ import com.compofelice.stiereats.data.Restaurant
 import com.compofelice.stiereats.data.Tier
 import com.compofelice.stiereats.ui.AppViewModel
 import com.compofelice.stiereats.ui.TierBadge
+import com.compofelice.stiereats.ui.share.ShareCardSheet
+import com.compofelice.stiereats.ui.share.TierShareCard
 
 @Composable
 fun MyTiersScreen(
@@ -52,25 +64,47 @@ fun MyTiersScreen(
         }
     }
 
-    LazyColumn(modifier.fillMaxSize()) {
-        Tier.entries.forEach { tier ->
-            val list = grouped[tier].orEmpty()
-            if (list.isNotEmpty()) {
-                item(key = "hdr_${tier.rawValue}") {
-                    Row(
-                        Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        TierBadge(tier, size = 36)
-                        Text("${list.size}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    var showShare by remember { mutableStateOf(false) }
+    Column(modifier.fillMaxSize()) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            TextButton(onClick = { showShare = true }) {
+                Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Share")
+            }
+        }
+        LazyColumn(Modifier.weight(1f).fillMaxWidth()) {
+            Tier.entries.forEach { tier ->
+                val list = grouped[tier].orEmpty()
+                if (list.isNotEmpty()) {
+                    item(key = "hdr_${tier.rawValue}") {
+                        Row(
+                            Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            TierBadge(tier, size = 36)
+                            Text("${list.size}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    items(list, key = { it.id }) { r ->
+                        RestaurantLine(r, onOpen)
+                        HorizontalDivider()
                     }
                 }
-                items(list, key = { it.id }) { r ->
-                    RestaurantLine(r, onOpen)
-                    HorizontalDivider()
-                }
             }
+        }
+    }
+
+    if (showShare) {
+        ShareCardSheet(
+            onDismiss = { showShare = false },
+            fileName = "stier-tier-list.png",
+        ) {
+            TierShareCard(grouped = grouped, displayName = vm.displayName)
         }
     }
 }

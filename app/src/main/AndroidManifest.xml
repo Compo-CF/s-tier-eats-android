@@ -40,5 +40,18 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-1927040492403163~2050571508" />
+
+        <!-- FileProvider for sharing rendered card PNGs (tier list, stats) out
+             of cacheDir/shared_images via a content:// URI. Authority mirrors
+             ShareCapture.kt ("<package>.fileprovider"). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

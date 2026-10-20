@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FileProvider paths for sharing rendered card images out of the app's cache.
+     Referenced by the <provider> in AndroidManifest.xml and by ShareCapture.kt
+     (FileProvider.getUriForFile with authority "<package>.fileprovider"). -->
+<paths>
+    <cache-path name="shared_images" path="shared_images/" />
+</paths>
