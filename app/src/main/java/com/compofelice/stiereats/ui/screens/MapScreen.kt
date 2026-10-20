@@ -88,6 +88,6 @@ fun MapScreen(
                 Clustering(items = items, clusterManager = clusterManager)
             }
         }
-        BannerAd(Modifier.fillMaxWidth())
+        if (!vm.isPlus) BannerAd(Modifier.fillMaxWidth())
     }
 }

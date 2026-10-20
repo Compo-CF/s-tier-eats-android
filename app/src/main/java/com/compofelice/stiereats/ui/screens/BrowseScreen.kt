@@ -160,7 +160,7 @@ fun BrowseScreen(
                 }
             }
         }
-        BannerAd(Modifier.fillMaxWidth())
+        if (!vm.isPlus) BannerAd(Modifier.fillMaxWidth())
     }
 }
 

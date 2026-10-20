@@ -1,5 +1,6 @@
 package com.compofelice.stiereats.ui
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -8,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.compofelice.stiereats.auth.AuthManager
+import com.compofelice.stiereats.billing.BillingManager
 import com.compofelice.stiereats.data.CatalogRepository
 import com.compofelice.stiereats.data.CommunityTier
 import com.compofelice.stiereats.data.DietaryTag
@@ -38,6 +40,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val repo = FirestoreRepository()
     private val catalog = CatalogRepository(app)
     private val locationProvider = LocationProvider(app)
+    private val billing = BillingManager(app)
 
     var restaurants by mutableStateOf<List<Restaurant>>(emptyList()); private set
     var restaurantsById by mutableStateOf<Map<String, Restaurant>>(emptyMap()); private set
@@ -60,7 +63,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     var catalogLoading by mutableStateOf(true); private set
 
+    // ── S-Tier Plus subscription (Play Billing) ──────────────────
+    /** True while the user holds an active S-Tier Plus subscription (removes ads). */
+    val isPlus: Boolean get() = billing.isPlus
+    /** Localized subscription price once Play returns it, else null. */
+    val plusPrice: String? get() = billing.priceText
+    /** Launch the Play purchase sheet. Needs the hosting Activity. */
+    fun subscribePlus(activity: Activity) = billing.launchPurchase(activity)
+
     fun bootstrap() {
+        billing.start()
         viewModelScope.launch {
             val loaded = withContext(Dispatchers.IO) {
                 val bundled = catalog.loadBundled()
