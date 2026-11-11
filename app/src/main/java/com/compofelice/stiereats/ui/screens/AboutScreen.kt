@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.compofelice.stiereats.BuildConfig
 
 private const val PRIVACY_URL = "https://compo-cf.github.io/woodlands-eats/android-privacy.html"
+private const val STUDIO_URL = "https://compo-cf.github.io/afterhoursdevstudio/"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +82,19 @@ fun AboutScreen(onBack: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Privacy policy") }
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(STUDIO_URL)))
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("More from After Hours Dev Studio") }
             Spacer(Modifier.height(24.dp))
+            Text(
+                "Made by After Hours Dev Studio",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
