@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      play_track:
+        description: "Upload the AAB to this Play track (none = build only)"
+        type: choice
+        options: [internal, alpha, none]
+        default: internal
+      notes:
+        description: "Release notes (optional, en-US)"
+        required: false
 
 jobs:
   # Fast debug build on every push/PR — validates compilation.
@@ -30,11 +39,15 @@ jobs:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
 
-  # Signed release AAB for Play Store upload. Runs on main + manual dispatch.
+  # Signed release AAB. Runs on main + manual dispatch; a manual run also uploads it to Play
+  # (keyless, play_track input, internal by default). versionCode is hand-set in app/build.gradle.kts.
   # SentinelOne blocks Gradle locally on Windows, so this is the build path.
   release:
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -58,6 +71,26 @@ jobs:
           MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
       - name: Upload release AAB
         uses: actions/upload-artifact@v4
+        # Convenience copy only: the account-wide artifact quota can refuse it; never fail the build for that.
+        continue-on-error: true
         with:
           name: app-release-aab
           path: app/build/outputs/bundle/release/app-release.aab
+      - name: Google auth (keyless Workload Identity, never expires)
+        if: github.event_name == 'workflow_dispatch' && inputs.play_track != 'none'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/896206213654/locations/global/workloadIdentityPools/github/providers/compo-cf
+          service_account: play-publisher@restaurantsfeed.iam.gserviceaccount.com
+      - uses: actions/setup-python@v5
+        if: github.event_name == 'workflow_dispatch' && inputs.play_track != 'none'
+        with:
+          python-version: "3.12"
+      - name: Upload to Play
+        if: github.event_name == 'workflow_dispatch' && inputs.play_track != 'none'
+        env:
+          TRACK: ${{ inputs.play_track }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          pip install -q google-api-python-client==2.151.0 google-auth==2.36.0
+          python scripts/play_upload.py --package com.compofelice.stiereats --aab 'app/build/outputs/bundle/release/app-release.aab' --track "$TRACK" --notes "$NOTES"
